@@ -38,6 +38,10 @@ else()
   set(_ex_lang CXX)
 endif()
 
+if(SUPERLUDIST_OpenMP)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 # Add source directory to include directories
 include_directories(. ..)
 
