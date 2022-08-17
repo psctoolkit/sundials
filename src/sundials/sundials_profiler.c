@@ -408,14 +408,6 @@ SUNErrCode SUNProfiler_Print(SUNProfiler p, FILE* fp)
     fprintf(fp, "=============================================================="
                 "==================================================\n");
 
-#if SUNDIALS_MPI_ENABLED
-    if (p->comm == SUN_COMM_NULL)
-    {
-      printf(
-        "WARNING: no MPI communicator provided, times shown are for rank 0\n");
-    }
-#endif
-
     /* Print all the other timers out */
     for (i = 0; i < p->map->size; i++)
     {
