@@ -211,6 +211,9 @@ SUNErrCode SUNProfiler_Create(SUNComm comm, const char* title, SUNProfiler* p)
   /* Initialize the overall timer to 0. */
   profiler->sundials_time = 0.0;
 
+  /* Default to table output format */
+  profiler->output_format = SUN_OUTPUTFORMAT_TABLE;
+
   SUNDIALS_MARK_BEGIN(profiler, SUNDIALS_ROOT_TIMER);
   sunStopTiming(profiler->overhead);
 
@@ -359,6 +362,18 @@ SUNErrCode SUNProfiler_Reset(SUNProfiler p)
   return SUN_SUCCESS;
 }
 
+int SUNProfiler_SetOutputFormat(SUNProfiler p, SUNOutputFormat fmt)
+{
+  if (!p) return -1;
+
+  if ((fmt != SUN_OUTPUTFORMAT_TABLE) && (fmt != SUN_OUTPUTFORMAT_CSV))
+    return -1;
+
+  p->output_format = fmt;
+
+  return 0;
+}
+
 SUNErrCode SUNProfiler_Print(SUNProfiler p, FILE* fp)
 {
   SUNErrCode ier             = 0;
@@ -421,9 +436,18 @@ SUNErrCode SUNProfiler_Print(SUNProfiler p, FILE* fp)
   if (rank == 0)
   {
     /* Print out the total time and the profiler overhead */
-    fprintf(fp, "%-40s\t %6.2f%% \t         %.6fs \t -- \t\t -- \n",
-            "Est. profiler overhead", p->overhead->elapsed / p->sundials_time,
-            p->overhead->elapsed);
+    if (p->output_format == SUN_OUTPUTFORMAT_CSV)
+    {
+      fprintf(fp, ",estimated profiler overhead percent,%.2f,profiler overhead max,%.6f",
+              p->overhead->elapsed / p->sundials_time,
+              p->overhead->elapsed);
+    }
+    else
+    {
+      fprintf(fp, "%-40s\t %6.2f%% \t         %.6fs \t -- \t\t -- \n", "Est. profiler overhead",
+              p->overhead->elapsed / p->sundials_time,
+              p->overhead->elapsed);
+    }
 
     /* End of output */
     fprintf(fp, "\n");
@@ -523,8 +547,18 @@ void sunPrintTimer(SUNHashMapKeyValue kv, FILE* fp, void* pvoid)
   double percent = strcmp((const char*)kv->key, (const char*)SUNDIALS_ROOT_TIMER)
                      ? maximum / p->sundials_time * 100
                      : 100;
-  fprintf(fp, "%-40s\t %6.2f%% \t         %.6fs \t %.6fs \t %ld\n", kv->key,
-          percent, maximum, average, ts->count);
+
+  if (fmt == SUN_OUTPUTFORMAT_CSV)
+  {
+    if (idx) fprintf(fp,",");
+    fprintf(fp, "%s percent,%.2f,%s maximum,%.6f,%s average,%.6f,%s count,%ld",
+            kv->key, percent, kv->key, maximum, kv->key, average, kv->key, ts->count);
+  }
+  else
+  {
+    fprintf(fp, "%-40s\t %6.2f%% \t         %.6fs \t %.6fs \t %ld\n",
+            kv->key, percent, maximum, average, ts->count);
+  }
 }
 
 /* Comparator for qsort that compares key-value pairs
