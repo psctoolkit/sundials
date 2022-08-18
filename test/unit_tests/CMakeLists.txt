@@ -54,3 +54,7 @@ if(CXX_FOUND)
     add_subdirectory(profiling)
   endif()
 endif()
+
+if(SUNDIALS_BUILD_WITH_PROFILING AND CXX_FOUND)
+  add_subdirectory(profiling)
+endif()
