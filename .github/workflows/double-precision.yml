@@ -2,7 +2,7 @@
 name: Build and Test - Ubuntu/gcc double precision (TPLs, no GPUs)
 
 on:
-  push:
+  #push: # disable for now
   pull_request:
   merge_group:
   workflow_dispatch:
