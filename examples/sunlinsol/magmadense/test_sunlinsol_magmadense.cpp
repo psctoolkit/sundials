@@ -50,10 +50,10 @@ int main(int argc, char *argv[])
   SUNLinearSolver LS;                 /* solver object              */
   SUNMatrix       A, I;               /* test matrices              */
   N_Vector        x, b;               /* test vectors               */
-  int             print_timing;
   sunindextype    i, j, k;
   realtype        *Adata, *Idata, *xdata;
   SUNContext      sunctx;
+  int strategy;
 
   if (SUNContext_Create(NULL, &sunctx)) {
     printf("ERROR: SUNContext_Create failed\n");
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
   /* check input and set matrix dimensions */
   if (argc < 4){
-    printf("ERROR: THREE (3) Inputs required: matrix cols, number of blocks, print timing \n");
+    printf("ERROR: THREE (3) Inputs required: matrix cols, number of blocks, solver strategy \n");
     return(-1);
   }
 
@@ -82,11 +82,14 @@ int main(int argc, char *argv[])
     return(-1);
   }
 
-  print_timing = atoi(argv[3]);
-  SetTiming(print_timing);
+  strategy = (sunindextype) atol(argv[3]);
+  if (strategy < 0) {
+    printf("ERROR: strategy must be a positive integer \n");
+    return(-1);
+  }
 
-  printf("\n MAGMA dense linear solver test: size %ld, blocks %ld\n\n",
-         (long int) cols, (long int) nblocks);
+  printf("\n MAGMA dense linear solver test: size %ld, blocks %ld, solver strategy %d\n\n",
+         (long int) cols, (long int) nblocks, strategy);
 
   /* Create matrices and vectors */
   if (nblocks > 1)
@@ -165,6 +168,11 @@ int main(int argc, char *argv[])
     free(Adata);
     free(Idata);
 
+    return(1);
+  }
+
+  if (SUNLinSol_MagmaDense_SetStrategy(LS, strategy)) {
+    printf("FAIL: SUNLinSol_MagmaDense_SetStrategy failure\n");
     return(1);
   }
 

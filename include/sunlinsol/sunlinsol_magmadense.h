@@ -40,15 +40,45 @@ extern "C" {
  * MAGMA dense implementation of SUNLinearSolver
  * ----------------------------------------------- */
 
+enum {
+  /* These work with SUNDIALS configured for single or double precision: */
+  SUN_MAGMA_STRATEGY_GETRF,
+  SUN_MAGMA_STRATEGY_GESV,
+
+  /* These require SUNDIALS to be configured for single precision: */
+  SUN_MAGMA_STRATEGY_HTGETRF,
+
+  /* These require SUNDIALS to be configured for double precision: */
+  SUN_MAGMA_STRATEGY_HGESV_REFINE,
+  SUN_MAGMA_STRATEGY_SGESV_REFINE,
+
+  SUN_MAGMA_STRATEGY_DEFAULT = SUN_MAGMA_STRATEGY_GETRF
+};
+
 struct _SUNLinearSolverContent_MagmaDense {
-  int             last_flag;
-  booleantype     async;
+  /* Solver options */
+  int             strategy;
+  sunbooleantype  initialized;
+  sunbooleantype  async;
+  
+  /* Workspaces */
   sunindextype    N;
+  sunindextype    nblocks;
   SUNMemory       pivots;
+
+  /* Workspaces only needed for batch case: */
   SUNMemory       pivotsarr;
   SUNMemory       dpivotsarr;
   SUNMemory       infoarr;
   SUNMemory       rhsarr;
+  
+  /* Workspaces needed only iter. refinment based strategies */
+  SUNMemory       dpivots;
+  SUNMemory       workd;
+  SUNMemory       works;
+
+  /* Auxillary */
+  int             last_flag;
   SUNMemoryHelper memhelp;
   magma_queue_t   q;
 };
@@ -59,6 +89,7 @@ typedef struct _SUNLinearSolverContent_MagmaDense *SUNLinearSolverContent_MagmaD
 SUNDIALS_EXPORT SUNLinearSolver SUNLinSol_MagmaDense(N_Vector y, SUNMatrix A, SUNContext sunctx);
 
 SUNDIALS_EXPORT int SUNLinSol_MagmaDense_SetAsync(SUNLinearSolver S, booleantype onoff);
+SUNDIALS_EXPORT int SUNLinSol_MagmaDense_SetStrategy(SUNLinearSolver S, int strategy);
 
 SUNDIALS_EXPORT SUNLinearSolver_Type SUNLinSolGetType_MagmaDense(SUNLinearSolver S);
 SUNDIALS_EXPORT SUNLinearSolver_ID SUNLinSolGetID_MagmaDense(SUNLinearSolver S);
