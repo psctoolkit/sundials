@@ -451,10 +451,6 @@ void ERKStepPrintMem(void* arkode_mem, FILE* outfile)
   ARKodeERKStepMem step_mem;
   int retval;
 
-#ifdef SUNDIALS_DEBUG_PRINTVEC
-  int i;
-#endif
-
   /* access ARKodeERKStepMem structure */
   retval = erkStep_AccessStepMem(arkode_mem, __func__, &ark_mem, &step_mem);
   if (retval != ARK_SUCCESS) { return; }
@@ -474,9 +470,9 @@ void ERKStepPrintMem(void* arkode_mem, FILE* outfile)
   fprintf(outfile, "ERKStep: Butcher table:\n");
   ARKodeButcherTable_Write(step_mem->B, outfile);
 
-#ifdef SUNDIALS_DEBUG_PRINTVEC
+#ifdef SUNDIALS_DEBUG
   /* output vector quantities */
-  for (i = 0; i < step_mem->stages; i++)
+  for (int i = 0; i < step_mem->stages; i++)
   {
     fprintf(outfile, "ERKStep: F[%i]:\n", i);
     N_VPrintFile(step_mem->F[i], outfile);

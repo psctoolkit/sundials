@@ -149,10 +149,6 @@ def main():
             'SUNDIALS_DEBUG_HIP_LASTERROR', 'OFF', 'BOOL',
             'SUNDIALS debugging hip errors', dependson='--debug')
 
-    add_arg(group, '--debug-printvec', 'SUNDIALS_DEBUG_PRINTVEC',
-            'SUNDIALS_DEBUG_PRINTVEC', 'OFF', 'BOOL',
-            'SUNDIALS debugging vector output', dependson='--debug')
-
     # --------------
     # Library Types
     # --------------

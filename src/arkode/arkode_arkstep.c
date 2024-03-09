@@ -804,10 +804,6 @@ void ARKStepPrintMem(void* arkode_mem, FILE* outfile)
   ARKodeARKStepMem step_mem;
   int retval;
 
-#ifdef SUNDIALS_DEBUG_PRINTVEC
-  int i;
-#endif
-
   /* access ARKodeARKStepMem structure */
   retval = arkStep_AccessStepMem(arkode_mem, __func__, &ark_mem, &step_mem);
   if (retval != ARK_SUCCESS) { return; }
@@ -865,7 +861,7 @@ void ARKStepPrintMem(void* arkode_mem, FILE* outfile)
   fprintf(outfile, "ARKStep: rdiv = %" RSYM "\n", step_mem->rdiv);
   fprintf(outfile, "ARKStep: dgmax = %" RSYM "\n", step_mem->dgmax);
 
-#ifdef SUNDIALS_DEBUG_PRINTVEC
+#ifdef SUNDIALS_DEBUG
   /* output vector quantities */
   fprintf(outfile, "ARKStep: sdata:\n");
   N_VPrintFile(step_mem->sdata, outfile);
@@ -874,17 +870,21 @@ void ARKStepPrintMem(void* arkode_mem, FILE* outfile)
   fprintf(outfile, "ARKStep: zcor:\n");
   N_VPrintFile(step_mem->zcor, outfile);
   if (step_mem->Fe != NULL)
-    for (i = 0; i < step_mem->stages; i++)
+  {
+    for (int i = 0; i < step_mem->stages; i++)
     {
       fprintf(outfile, "ARKStep: Fe[%i]:\n", i);
       N_VPrintFile(step_mem->Fe[i], outfile);
     }
+  }
   if (step_mem->Fi != NULL)
-    for (i = 0; i < step_mem->stages; i++)
+  {
+    for (int i = 0; i < step_mem->stages; i++)
     {
       fprintf(outfile, "ARKStep: Fi[%i]:\n", i);
       N_VPrintFile(step_mem->Fi[i], outfile);
     }
+  }
 #endif
 }
 

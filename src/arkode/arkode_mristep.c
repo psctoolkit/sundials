@@ -761,7 +761,7 @@ void MRIStepPrintMem(void* arkode_mem, FILE* outfile)
 {
   ARKodeMem ark_mem;
   ARKodeMRIStepMem step_mem;
-  int i, retval;
+  int retval;
 
   /* access ARKodeMRIStepMem structure */
   retval = mriStep_AccessStepMem(arkode_mem, __func__, &ark_mem, &step_mem);
@@ -784,7 +784,7 @@ void MRIStepPrintMem(void* arkode_mem, FILE* outfile)
   fprintf(outfile, "MRIStep: predictor = %i\n", step_mem->predictor);
   fprintf(outfile, "MRIStep: convfail = %i\n", step_mem->convfail);
   fprintf(outfile, "MRIStep: stagetypes =");
-  for (i = 0; i < step_mem->stages; i++)
+  for (int i = 0; i < step_mem->stages; i++)
   {
     fprintf(outfile, " %i", step_mem->stagetypes[i]);
   }
@@ -821,19 +821,19 @@ void MRIStepPrintMem(void* arkode_mem, FILE* outfile)
   fprintf(outfile, "MRIStep: rdiv = %" RSYM "\n", step_mem->rdiv);
   fprintf(outfile, "MRIStep: dgmax = %" RSYM "\n", step_mem->dgmax);
   fprintf(outfile, "MRIStep: Ae_row =");
-  for (i = 0; i < step_mem->nstages_active; i++)
+  for (int i = 0; i < step_mem->nstages_active; i++)
   {
     fprintf(outfile, " %" RSYM, step_mem->Ae_row[i]);
   }
   fprintf(outfile, "\n");
   fprintf(outfile, "MRIStep: Ai_row =");
-  for (i = 0; i < step_mem->nstages_active; i++)
+  for (int i = 0; i < step_mem->nstages_active; i++)
   {
     fprintf(outfile, " %" RSYM, step_mem->Ai_row[i]);
   }
   fprintf(outfile, "\n");
 
-#ifdef SUNDIALS_DEBUG_PRINTVEC
+#ifdef SUNDIALS_DEBUG
   /* output vector quantities */
   fprintf(outfile, "MRIStep: sdata:\n");
   N_VPrintFile(step_mem->sdata, outfile);
@@ -842,17 +842,21 @@ void MRIStepPrintMem(void* arkode_mem, FILE* outfile)
   fprintf(outfile, "MRIStep: zcor:\n");
   N_VPrintFile(step_mem->zcor, outfile);
   if (step_mem->Fse)
-    for (i = 0; i < step_mem->nstages_active; i++)
+  {
+    for (int i = 0; i < step_mem->nstages_active; i++)
     {
       fprintf(outfile, "MRIStep: Fse[%i]:\n", i);
       N_VPrintFile(step_mem->Fse[i], outfile);
     }
+  }
   if (step_mem->Fsi)
-    for (i = 0; i < step_mem->nstages_active; i++)
+  {
+    for (int i = 0; i < step_mem->nstages_active; i++)
     {
       fprintf(outfile, "MRIStep: Fsi[%i]:\n", i);
       N_VPrintFile(step_mem->Fsi[i], outfile);
     }
+  }
 #endif
 
   /* print the inner stepper memory */
@@ -3066,9 +3070,6 @@ int mriStepInnerStepper_FreeVecs(MRIStepInnerStepper stepper)
 /* Print forcing vectors to output file */
 void mriStepInnerStepper_PrintMem(MRIStepInnerStepper stepper, FILE* outfile)
 {
-#ifdef SUNDIALS_DEBUG_PRINTVEC
-  int i;
-#endif
   if (stepper == NULL) { return; }
 
   /* output data from the inner stepper */
@@ -3076,10 +3077,10 @@ void mriStepInnerStepper_PrintMem(MRIStepInnerStepper stepper, FILE* outfile)
   fprintf(outfile, "MRIStepInnerStepper: inner_nforcing = %i\n",
           stepper->nforcing);
 
-#ifdef SUNDIALS_DEBUG_PRINTVEC
+#ifdef SUNDIALS_DEBUG
   if (stepper->forcing != NULL)
   {
-    for (i = 0; i < stepper->nforcing; i++)
+    for (int i = 0; i < stepper->nforcing; i++)
     {
       fprintf(outfile, "MRIStep: inner_forcing[%i]:\n", i);
       N_VPrintFile(stepper->forcing[i], outfile);

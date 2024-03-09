@@ -1545,7 +1545,7 @@ void arkPrintMem(ARKodeMem ark_mem, FILE* outfile)
   /* output interpolation quantities */
   arkInterpPrintMem(ark_mem->interp, outfile);
 
-#ifdef SUNDIALS_DEBUG_PRINTVEC
+#ifdef SUNDIALS_DEBUG
   /* output vector quantities */
   fprintf(outfile, "Vapbsol:\n");
   N_VPrintFile(ark_mem->Vabstol, outfile);

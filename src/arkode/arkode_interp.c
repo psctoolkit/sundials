@@ -291,7 +291,7 @@ void arkInterpPrintMem_Hermite(ARKInterp interp, FILE* outfile)
     fprintf(outfile, "arkode_interp (Hermite): tnew = %" RSYM "\n",
             HINT_TNEW(interp));
     fprintf(outfile, "arkode_interp (Hermite): h = %" RSYM "\n", HINT_H(interp));
-#ifdef SUNDIALS_DEBUG_PRINTVEC
+#ifdef SUNDIALS_DEBUG
     fprintf(outfile, "arkode_interp (Hermite): fold:\n");
     N_VPrintFile(HINT_FOLD(interp), outfile);
     fprintf(outfile, "arkode_interp (Hermite): yold:\n");
@@ -1030,7 +1030,6 @@ void arkInterpFree_Lagrange(void* arkode_mem, ARKInterp I)
   ---------------------------------------------------------------*/
 void arkInterpPrintMem_Lagrange(ARKInterp I, FILE* outfile)
 {
-  int i;
   if (I != NULL)
   {
     fprintf(outfile, "arkode_interp (Lagrange): nmax = %i\n", LINT_NMAX(I));
@@ -1038,7 +1037,7 @@ void arkInterpPrintMem_Lagrange(ARKInterp I, FILE* outfile)
     if (LINT_THIST(I) != NULL)
     {
       fprintf(outfile, "arkode_interp (Lagrange): thist =");
-      for (i = 0; i < LINT_NMAX(I); i++)
+      for (int i = 0; i < LINT_NMAX(I); i++)
       {
         fprintf(outfile, "  %" RSYM, LINT_TJ(I, i));
       }
@@ -1047,16 +1046,16 @@ void arkInterpPrintMem_Lagrange(ARKInterp I, FILE* outfile)
     if (LINT_YHIST(I) != NULL)
     {
       fprintf(outfile, "arkode_interp (Lagrange): yhist ptrs =");
-      for (i = 0; i < LINT_NMAX(I); i++)
+      for (int i = 0; i < LINT_NMAX(I); i++)
       {
         fprintf(outfile, "  %p", (void*)LINT_YJ(I, i));
       }
       fprintf(outfile, "\n");
     }
-#ifdef SUNDIALS_DEBUG_PRINTVEC
+#ifdef SUNDIALS_DEBUG
     if (LINT_YHIST(I) != NULL)
     {
-      for (i = 0; i < LINT_NMAX(I); i++)
+      for (int i = 0; i < LINT_NMAX(I); i++)
       {
         fprintf(outfile, "arkode_interp (Lagrange): yhist[%i]:\n", i);
         N_VPrintFile(LINT_YJ(I, i), outfile);

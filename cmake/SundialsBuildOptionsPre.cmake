@@ -233,8 +233,7 @@ set(_SUNDIALS_DEBUG_OPTIONS
   SUNDIALS_DEBUG
   SUNDIALS_DEBUG_ASSERT
   SUNDIALS_DEBUG_CUDA_LASTERROR
-  SUNDIALS_DEBUG_HIP_LASTERROR
-  SUNDIALS_DEBUG_PRINTVEC)
+  SUNDIALS_DEBUG_HIP_LASTERROR)
 
 sundials_option(SUNDIALS_DEBUG BOOL
   "Enable additional debugging output and options" OFF
@@ -260,17 +259,6 @@ sundials_option(SUNDIALS_DEBUG_HIP_LASTERROR BOOL
   "Enable HIP last error checks when debugging" OFF
   DEPENDS_ON SUNDIALS_DEBUG ENABLE_HIP
   ADVANCED)
-
-sundials_option(SUNDIALS_DEBUG_PRINTVEC BOOL
-  "Enable vector printing when debugging" OFF
-  DEPENDS_ON SUNDIALS_DEBUG
-  ADVANCED)
-
-if(SUNDIALS_DEBUG_PRINTVEC AND SUNDIALS_LOGGING_LEVEL LESS 5)
-  set(DOCSTR "SUNDIALS_DEBUG_PRINTVEC=ON forced the logging level to 5")
-  message(STATUS "${DOCSTR}")
-  set(SUNDIALS_LOGGING_LEVEL "5" CACHE STRING "${DOCSTR}" FORCE)
-endif()
 
 # ---------------------------------------------------------------
 # Options for SUNDIALS testing

@@ -78,9 +78,7 @@ system, etc. developers should adhere to the following checklist.
 #. Use the debugging macros defined in ``src/sundials/sundials_debug.h`` where
    relevant and internal to SUNDIALS. Use the ``SUNDIALS_DEBUG`` macro to
    ``#ifdef`` out calls the sections of code which are for debugging purposes
-   only. Additionally, the ``SUNDIALS_DEBUG_PRINTVEC`` macro should be used to
-   ``#ifdef`` out calls to the generic vector print functions ``N_VPrint`` and
-   ``N_VPrintFile`` used for debugging purposes.
+   only.
 
 #. If answer files changed, and it is expected/desired, then update the `.out` files
    that are embedded in the `examples/` directory AND the

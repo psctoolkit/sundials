@@ -186,7 +186,7 @@ struct _generic_N_Vector_Ops
   SUNErrCode (*nvbufpack)(N_Vector, void*);
   SUNErrCode (*nvbufunpack)(N_Vector, void*);
 
-  /* Debugging functions (called when SUNDIALS_DEBUG_PRINTVEC is defined). */
+  /* Print functions */
   void (*nvprint)(N_Vector);
   void (*nvprintfile)(N_Vector, FILE*);
 };

@@ -605,7 +605,7 @@ void N_VPrintFile_Cuda(N_Vector x, FILE* outfile)
 {
   sunindextype i;
 
-#ifdef SUNDIALS_DEBUG_PRINTVEC
+#ifdef SUNDIALS_DEBUG
   N_VCopyFromDevice_Cuda(x);
 #endif
 
