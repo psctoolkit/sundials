@@ -1213,7 +1213,7 @@ void ARKodeFree(void** arkode_mem)
     ark_mem->relax_mem = NULL;
   }
 
-  free(*arkode_mem);
+  sunFree(ark_mem->sunctx, ark_mem, sizeof(struct ARKodeMemRec));
   *arkode_mem = NULL;
 }
 
