@@ -25,6 +25,7 @@
 #include "arkode_erkstep_impl.h"
 #include "arkode_impl.h"
 #include "arkode_interp_impl.h"
+#include "sundials_utils.h"
 
 /*===============================================================
   Exported functions
@@ -257,7 +258,6 @@ int erkStep_Resize(ARKodeMem ark_mem, N_Vector y0,
   ---------------------------------------------------------------*/
 void erkStep_Free(ARKodeMem ark_mem)
 {
-  int j;
   sunindextype Bliw, Blrw;
   ARKodeERKStepMem step_mem;
 
@@ -280,16 +280,7 @@ void erkStep_Free(ARKodeMem ark_mem)
     }
 
     /* free the RHS vectors */
-    if (step_mem->F != NULL)
-    {
-      for (j = 0; j < step_mem->stages; j++)
-      {
-        (void)sunVec_Destroy(&step_mem->F[j]);
-      }
-      free(step_mem->F);
-      step_mem->F = NULL;
-      ark_mem->liw -= step_mem->stages;
-    }
+    (void)sunVecArray_Destroy(step_mem->stages, &(step_mem->F));
 
     /* free the reusable arrays for fused vector interface */
     if (step_mem->cvals != NULL)
@@ -370,7 +361,7 @@ void erkStep_PrintMem(ARKodeMem ark_mem, FILE* outfile)
 int erkStep_Init(ARKodeMem ark_mem, int init_type)
 {
   ARKodeERKStepMem step_mem;
-  int retval, j;
+  int retval;
 
   /* access ARKodeERKStepMem structure */
   retval = erkStep_AccessStepMem(ark_mem, __func__, &step_mem);
@@ -423,18 +414,10 @@ int erkStep_Init(ARKodeMem ark_mem, int init_type)
 
   /* Allocate ARK RHS vector memory, update storage requirements */
   /*   Allocate F[0] ... F[stages-1] if needed */
-  if (step_mem->F == NULL)
+  if (sunVecArray_Clone(step_mem->stages, ark_mem->ewt, &(step_mem->F)))
   {
-    step_mem->F = (N_Vector*)calloc(step_mem->stages, sizeof(N_Vector));
+    return (ARK_MEM_FAIL);
   }
-  for (j = 0; j < step_mem->stages; j++)
-  {
-    if (sunVec_Clone(ark_mem->ewt, &(step_mem->F[j])))
-    {
-      return (ARK_MEM_FAIL);
-    }
-  }
-  ark_mem->liw += step_mem->stages; /* pointers */
 
   /* Allocate reusable arrays for fused vector interface */
   if (step_mem->cvals == NULL)
