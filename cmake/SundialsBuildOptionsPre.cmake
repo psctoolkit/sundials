@@ -312,14 +312,15 @@ endif()
 
 sundials_option(
   SUNDIALS_TEST_FLOAT_PRECISION STRING
-  "Precision for floating point comparisons (number of digits)" "-1" ADVANCED)
+  "Precision for floating point comparisons (number of digits)" "4" ADVANCED)
 
 sundials_option(
   SUNDIALS_TEST_INTEGER_PRECISION STRING
-  "Precision for integer comparisons (percent difference)" "-1" ADVANCED)
+  "Precision for integer comparisons (percent difference)" "10" ADVANCED)
 
-sundials_option(SUNDIALS_TEST_OUTPUT_DIR PATH
-                "Location to write testing output files" "" ADVANCED)
+sundials_option(
+  SUNDIALS_TEST_OUTPUT_DIR PATH "Location to write testing output files"
+  "${PROJECT_BINARY_DIR}/Testing/output" ADVANCED)
 
 sundials_option(SUNDIALS_TEST_ANSWER_DIR PATH
                 "Location of testing answer files" "" ADVANCED)
@@ -327,9 +328,8 @@ sundials_option(SUNDIALS_TEST_ANSWER_DIR PATH
 sundials_option(SUNDIALS_TEST_PROFILE BOOL
                 "Use Caliper to profile SUNDIALS tests" OFF ADVANCED)
 
-sundials_option(
-  SUNDIALS_TEST_NODIFF BOOL
-  "Disable output comparison in the regression test suite" OFF ADVANCED)
+sundials_option(SUNDIALS_TEST_DIFF BOOL "Compare test output to saved outputs"
+                OFF ADVANCED)
 
 sundials_option(SUNDIALS_TEST_CONTAINER_EXE PATH "Path to docker or podman" ""
                 ADVANCED)

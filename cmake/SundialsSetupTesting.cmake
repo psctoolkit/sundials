@@ -17,20 +17,28 @@
 # Enable testing with 'make test'
 include(CTest)
 
-# Check if development tests are enabled
-if(SUNDIALS_TEST_DEVTESTS OR BUILD_BENCHMARKS)
+# Check if the test runner is needed
+if(SUNDIALS_TEST_DIFF
+   OR SUNDIALS_TEST_PROFILE
+   OR BUILD_BENCHMARKS)
+  set(SUNDIALS_TEST_USE_RUNNER TRUE)
+else()
+  set(SUNDIALS_TEST_USE_RUNNER FALSE)
+endif()
+
+if(SUNDIALS_TEST_USE_RUNNER)
+
   # Python is needed to use the test runner
   find_package(Python3 REQUIRED)
 
-  # look for the testRunner script in the test directory
+  # Look for the testRunner script in the test directory
   find_program(
     TESTRUNNER testRunner
     PATHS test
     NO_DEFAULT_PATH)
   if(NOT TESTRUNNER)
-    message(
-      FATAL_ERROR
-        "Could not locate testRunner. Set SUNDIALS_TEST_DEVTESTS=OFF or BUILD_BENCHMARKS=OFF to continue."
+    print_error(
+      "Could not locate testRunner. Set SUNDIALS_TEST_DIFF, SUNDIALS_TEST_PROFILE, or BUILD_BENCHMARKS to OFF."
     )
   endif()
   message(STATUS "Found testRunner: ${TESTRUNNER}")
@@ -40,66 +48,42 @@ if(SUNDIALS_TEST_DEVTESTS OR BUILD_BENCHMARKS)
 
 endif()
 
-# Check if development tests are enabled
-if(SUNDIALS_TEST_DEVTESTS)
+if(SUNDIALS_TEST_DIFF)
 
-  message("SUNDIALS Development testing")
-
-  # Create the default test output directory
-  set(TEST_OUTPUT_DIR ${PROJECT_BINARY_DIR}/Testing/output)
-
-  if(NOT EXISTS ${TEST_OUTPUT_DIR})
-    file(MAKE_DIRECTORY ${TEST_OUTPUT_DIR})
+  if(NOT EXISTS ${SUNDIALS_TEST_OUTPUT_DIR})
+    file(MAKE_DIRECTORY ${SUNDIALS_TEST_OUTPUT_DIR})
   endif()
-
-  # If a non-default output directory was provided make sure it exists
-  if(SUNDIALS_TEST_OUTPUT_DIR)
-    message(
-      STATUS
-        "Using non-default test output directory: ${SUNDIALS_TEST_OUTPUT_DIR}")
-    if(NOT EXISTS ${SUNDIALS_TEST_OUTPUT_DIR})
-      file(MAKE_DIRECTORY ${SUNDIALS_TEST_OUTPUT_DIR})
-    endif()
-  endif()
+  message(STATUS "Test output directory: ${SUNDIALS_TEST_OUTPUT_DIR}")
 
   # If a non-default answer directory was provided make sure it exists
   if(SUNDIALS_TEST_ANSWER_DIR)
-    message(
-      STATUS
-        "Using non-default test answer directory: ${SUNDIALS_TEST_ANSWER_DIR}")
+    message(STATUS "Test answer directory: ${SUNDIALS_TEST_ANSWER_DIR}")
     if(NOT EXISTS ${SUNDIALS_TEST_ANSWER_DIR})
       message(FATAL_ERROR "SUNDIALS_TEST_ANSWER_DIR does not exist!")
     endif()
   endif()
 
-  # If a non-default caliper output directory was provided make sure it exists
-  if(SUNDIALS_CALIPER_OUTPUT_DIR)
-    message(
-      STATUS
-        "Using non-default caliper output directory: ${SUNDIALS_CALIPER_OUTPUT_DIR}"
-    )
-    if(NOT EXISTS ${SUNDIALS_CALIPER_OUTPUT_DIR}/Example/${JOB_ID})
-      file(MAKE_DIRECTORY ${SUNDIALS_CALIPER_OUTPUT_DIR}/Example/${JOB_ID})
-    endif()
-  endif()
+  message(
+    STATUS "Test float comparison precision: ${SUNDIALS_TEST_FLOAT_PRECISION}")
+  message(
+    STATUS
+      "Test integer comparison precision: ${SUNDIALS_TEST_INTEGER_PRECISION}")
 
-  # Check if using non-default comparison precisions when testing
-  if(SUNDIALS_TEST_FLOAT_PRECISION GREATER_EQUAL "0")
-    message(
-      STATUS
-        "Using non-default float precision: ${SUNDIALS_TEST_FLOAT_PRECISION}")
-  endif()
+endif()
 
-  if(SUNDIALS_TEST_INTEGER_PRECISION GREATER_EQUAL "0")
-    message(
-      STATUS
-        "Using non-default integer precision: ${SUNDIALS_TEST_INTEGER_PRECISION}"
-    )
+# If a non-default caliper output directory was provided make sure it exists
+if(SUNDIALS_CALIPER_OUTPUT_DIR)
+  message(STATUS "Caliper output directory: ${SUNDIALS_CALIPER_OUTPUT_DIR}")
+  if(NOT EXISTS ${SUNDIALS_CALIPER_OUTPUT_DIR}/Example/${JOB_ID})
+    file(MAKE_DIRECTORY ${SUNDIALS_CALIPER_OUTPUT_DIR}/Example/${JOB_ID})
   endif()
+endif()
 
-  #
-  # Target to run tests in CI containers
-  #
+#
+# Target to run tests in CI containers
+#
+if(SUNDIALS_TEST_DEVTESTS)
+
   if(NOT SUNDIALS_TEST_CONTAINER_EXE)
     find_program(container_exe docker)
     if(NOT container_exe)

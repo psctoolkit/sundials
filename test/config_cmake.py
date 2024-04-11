@@ -1275,6 +1275,11 @@ def main():
         "SUNDIALS development tests",
     )
 
+    # compare output and answer files
+    add_arg(group, '--test-diff', 'SUNDIALS_TEST_DIFF',
+            'SUNDIALS_TEST_DIFF', 'OFF', 'BOOL',
+            'Compare test output and answer files')
+
     # unit tests
     add_arg(
         group,
@@ -1340,15 +1345,13 @@ def main():
         "SUNDIALS test integer comparison precision",
     )
 
-    add_arg(
-        group,
-        "--make-verbose",
-        "CMAKE_VERBOSE_MAKEFILE",
-        "CMAKE_VERBOSE_MAKEFILE",
-        "OFF",
-        "BOOL",
-        "verbose make output",
-    )
+    # profile tests
+    add_arg(group, '--test-profile', 'SUNDIALS_TEST_PROFILE',
+            'SUNDIALS_TEST_PROFILE', 'OFF', 'BOOL',
+            'Profile tests (requires Caliper)')
+
+    add_arg(group, '--make-verbose', 'CMAKE_VERBOSE_MAKEFILE',
+            'CMAKE_VERBOSE_MAKEFILE', 'OFF', 'BOOL', 'verbose make output')
 
     # ---------------------
     # Parse and check args

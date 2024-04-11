@@ -83,106 +83,69 @@ macro(SUNDIALS_ADD_TEST NAME EXECUTABLE)
   set(options "NODIFF")
   set(oneValueArgs "MPI_NPROCS" "FLOAT_PRECISION" "INTEGER_PRECISION"
                    "ANSWER_DIR" "ANSWER_FILE" "EXAMPLE_TYPE")
+
+  # macro keyword inputs followed by multiple values TEST_ARGS = command line
+  # arguments to pass to the test executable EXTRA_ARGS = additional command
+  # line arguments not added to the test name
   set(multiValueArgs "TEST_ARGS" "EXTRA_ARGS")
 
   # parse inputs and create variables SUNDIALS_ADD_TEST_<keyword>
   cmake_parse_arguments(SUNDIALS_ADD_TEST "${options}" "${oneValueArgs}"
                         "${multiValueArgs}" ${ARGN})
 
-  # check that the test is not excluded
+  # ---------------------------------
+  # check if the test should be added
+  # ---------------------------------
+
+  set(_add_test TRUE)
+
+  # exclude development tests (non-empty example type)
+  if(NOT SUNDIALS_TEST_DEVTESTS AND SUNDIALS_ADD_TEST_EXAMPLE_TYPE)
+    set(_add_test FALSE)
+  endif()
+
+  # always excluded
+  if("${SUNDIALS_ADD_TEST_EXAMPLE_TYPE}" STREQUAL "exclude")
+    set(_add_test FALSE)
+  endif()
+
+  # precision-specific exclusions
   string(TOLOWER "exclude-${SUNDIALS_PRECISION}" _exclude_precision)
-  if(("${SUNDIALS_ADD_TEST_EXAMPLE_TYPE}" STREQUAL "exclude")
-     OR ("${SUNDIALS_ADD_TEST_EXAMPLE_TYPE}" STREQUAL _exclude_precision))
+  if("${SUNDIALS_ADD_TEST_EXAMPLE_TYPE}" STREQUAL _exclude_precision)
+    set(_add_test FALSE)
+  endif()
 
-    message(
-      STATUS
-        "Skipped test ${NAME} because it had type ${SUNDIALS_ADD_TEST_EXAMPLE_TYPE}"
-    )
+  # --------
+  # add test
+  # --------
 
-  else()
+  if(_add_test)
 
-    if(SUNDIALS_TEST_DEVTESTS)
-
-      # run all tests (standard and develop) with the test runner
+    if(SUNDIALS_TEST_USE_RUNNER)
 
       # command line arguments for the test runner script
-      set(TEST_ARGS "--verbose" "--testname=${NAME}"
-                    "--executablename=$<TARGET_FILE:${EXECUTABLE}>")
+      set(TEST_ARGS
+          "--verbose" "--testname=${NAME}"
+          "--executablename=$<TARGET_FILE:${EXECUTABLE}>"
+          "--outputdir=${SUNDIALS_TEST_OUTPUT_DIR}")
 
-      if(SUNDIALS_TEST_PROFILE)
-        list(APPEND TEST_ARGS "--profile")
-        if(SUNDIALS_CALIPER_OUTPUT_DIR)
-          list(APPEND TEST_ARGS
-               "--calidir=${SUNDIALS_CALIPER_OUTPUT_DIR}/Example/${JOB_ID}")
-        else()
-          list(APPEND TEST_ARGS "--calidir=${TEST_OUTPUT_DIR}/Caliper/Example")
-        endif()
-      endif()
-
-      # check for a non-default output directory
-      if(SUNDIALS_TEST_OUTPUT_DIR)
-        list(APPEND TEST_ARGS "--outputdir=${SUNDIALS_TEST_OUTPUT_DIR}")
-      else()
-        list(APPEND TEST_ARGS "--outputdir=${TEST_OUTPUT_DIR}")
-      endif()
-
-      # set a non-default answer directory (default is test/answers)
-      if(SUNDIALS_TEST_ANSWER_DIR)
-        list(APPEND TEST_ARGS "--answerdir=${SUNDIALS_TEST_ANSWER_DIR}")
-      elseif(SUNDIALS_ADD_TEST_ANSWER_DIR)
-        list(APPEND TEST_ARGS "--answerdir=${SUNDIALS_ADD_TEST_ANSWER_DIR}")
-      endif()
-
-      # set the test answer file name (default is test_name_test_agrs)
-      if(SUNDIALS_ADD_TEST_ANSWER_FILE)
-        list(APPEND TEST_ARGS "--answerfile=${SUNDIALS_ADD_TEST_ANSWER_FILE}")
-      endif()
-
-      # check if a diff is needed and if non-default precisions were provided
-      if(SUNDIALS_ADD_TEST_NODIFF OR SUNDIALS_TEST_NODIFF)
-        # do not diff the output and answer files
-        list(APPEND TEST_ARGS "--nodiff")
-      else()
-        # set a non-default floating point precision (number of digits, default
-        # 4)
-        if(SUNDIALS_ADD_TEST_FLOAT_PRECISION
-           AND (NOT SUNDIALS_ADD_TEST_FLOAT_PRECISION MATCHES "DEFAULT|default"
-               ))
-          list(APPEND TEST_ARGS
-               "--floatprecision=${SUNDIALS_ADD_TEST_FLOAT_PRECISION}")
-        elseif(SUNDIALS_TEST_FLOAT_PRECISION GREATER_EQUAL "0")
-          list(APPEND TEST_ARGS
-               "--floatprecision=${SUNDIALS_TEST_FLOAT_PRECISION}")
-        endif()
-        # set a non-default integer precision (percent difference, default 10%)
-        if(SUNDIALS_ADD_TEST_INTEGER_PRECISION
-           AND (NOT SUNDIALS_ADD_TEST_INTEGER_PRECISION MATCHES
-                "DEFAULT|default"))
-          list(APPEND TEST_ARGS
-               "--integerpercentage=${SUNDIALS_ADD_TEST_INTEGER_PRECISION}")
-        elseif(SUNDIALS_TEST_INTEGER_PRECISION GREATER_EQUAL "0")
-          list(APPEND TEST_ARGS
-               "--integerpercentage=${SUNDIALS_TEST_INTEGER_PRECISION}")
-        endif()
-      endif()
-
-      # check if this test is run with MPI and set the MPI run command
-      if((SUNDIALS_ADD_TEST_MPI_NPROCS) AND ((MPIEXEC_EXECUTABLE)
-                                             OR (SUNDIALS_TEST_MPIRUN_COMMAND)))
+      # set run command if necessary and remove trailing white space from the
+      # command (i.e., empty MPIEXEC_PREFLAGS) as it can cause erroneous test
+      # failures with some MPI implementations
+      if(SUNDIALS_ADD_TEST_MPI_NPROCS AND (MPIEXEC_EXECUTABLE
+                                           OR SUNDIALS_TEST_MPIRUN_COMMAND))
         if(SUNDIALS_TEST_MPIRUN_COMMAND)
-          set(RUN_COMMAND
+          set(_run_command
               "${SUNDIALS_TEST_MPIRUN_COMMAND} ${MPIEXEC_NUMPROC_FLAG} ${SUNDIALS_ADD_TEST_MPI_NPROCS} ${MPIEXEC_PREFLAGS}"
           )
         elseif(MPIEXEC_EXECUTABLE)
-          set(RUN_COMMAND
+          set(_run_command
               "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${SUNDIALS_ADD_TEST_MPI_NPROCS} ${MPIEXEC_PREFLAGS}"
           )
         endif()
-
-        # remove trailing white space (empty MPIEXEC_PREFLAGS) as it can cause
-        # erroneous test failures with some MPI implementations
-        string(STRIP "${RUN_COMMAND}" RUN_COMMAND)
-        list(APPEND TEST_ARGS "--runcommand=\"${RUN_COMMAND}\"")
+        string(STRIP "${_run_command}" _run_command)
+        list(APPEND TEST_ARGS "--runcommand=\"${_run_command}\"")
+        unset(_run_command)
       endif()
 
       # set the test input args
@@ -202,25 +165,87 @@ macro(SUNDIALS_ADD_TEST NAME EXECUTABLE)
         unset(_run_args)
       endif()
 
+      if(SUNDIALS_TEST_PROFILE)
+        list(APPEND TEST_ARGS "--profile")
+        if(SUNDIALS_CALIPER_OUTPUT_DIR)
+          list(APPEND TEST_ARGS
+               "--calidir=${SUNDIALS_CALIPER_OUTPUT_DIR}/Example/${JOB_ID}")
+        else()
+          list(APPEND TEST_ARGS "--calidir=${TEST_OUTPUT_DIR}/Caliper/Example")
+        endif()
+      endif()
+
+      # set comparison precisions or do not diff the output and answer files
+      if(SUNDIALS_TEST_DIFF AND NOT SUNDIALS_ADD_TEST_NODIFF)
+
+        # set answer directory
+        if(SUNDIALS_TEST_ANSWER_DIR)
+          list(APPEND TEST_ARGS "--answerdir=${SUNDIALS_TEST_ANSWER_DIR}")
+        elseif(SUNDIALS_ADD_TEST_ANSWER_DIR)
+          list(APPEND TEST_ARGS "--answerdir=${SUNDIALS_ADD_TEST_ANSWER_DIR}")
+        endif()
+
+        # set the test answer file name
+        if(SUNDIALS_ADD_TEST_ANSWER_FILE)
+          list(APPEND TEST_ARGS "--answerfile=${SUNDIALS_ADD_TEST_ANSWER_FILE}")
+        endif()
+
+        # set floating point precision (number of digits, default 4)
+        if(SUNDIALS_ADD_TEST_FLOAT_PRECISION
+           AND (NOT SUNDIALS_ADD_TEST_FLOAT_PRECISION MATCHES "DEFAULT|default"
+               ))
+          list(APPEND TEST_ARGS
+               "--floatprecision=${SUNDIALS_ADD_TEST_FLOAT_PRECISION}")
+        else()
+          list(APPEND TEST_ARGS
+               "--floatprecision=${SUNDIALS_TEST_FLOAT_PRECISION}")
+        endif()
+
+        # set integer precision (percent difference, default 10%)
+        if(SUNDIALS_ADD_TEST_INTEGER_PRECISION
+           AND (NOT SUNDIALS_ADD_TEST_INTEGER_PRECISION MATCHES
+                "DEFAULT|default"))
+          list(APPEND TEST_ARGS
+               "--integerpercentage=${SUNDIALS_ADD_TEST_INTEGER_PRECISION}")
+        else()
+          list(APPEND TEST_ARGS
+               "--integerpercentage=${SUNDIALS_TEST_INTEGER_PRECISION}")
+        endif()
+
+      else()
+
+        list(APPEND TEST_ARGS "--nodiff")
+
+      endif()
+
       # create test case with the corresponding test runner command and
       # arguments all tests are added during development and only unlabeled
       # tests when released
-      add_test(NAME ${NAME} COMMAND ${PYTHON_EXECUTABLE} ${TESTRUNNER}
+      add_test(NAME ${NAME} COMMAND ${Python3_EXECUTABLE} ${TESTRUNNER}
                                     ${TEST_ARGS})
 
-    elseif(NOT SUNDIALS_ADD_TEST_EXAMPLE_TYPE)
+    else()
 
-      # if a test type was not set then it is a standard test that returns
-      # pass/fail
-
-      # convert string to list
+      # create semicolon separated list of input arguments
       if(SUNDIALS_ADD_TEST_TEST_ARGS)
-        string(REPLACE " " ";" TEST_ARGS "${SUNDIALS_ADD_TEST_TEST_ARGS}")
+        string(REPLACE " " ";" _user_args "${SUNDIALS_ADD_TEST_TEST_ARGS}")
+        set(_run_args "${_user_args}")
+        unset(_user_args)
+      endif()
+
+      if(SUNDIALS_ADD_TEST_EXTRA_ARGS)
+        string(REPLACE " " ";" _extra_args "${SUNDIALS_ADD_TEST_EXTRA_ARGS}")
+        set(_run_args "${_run_args} ${_extra_args}")
+        unset(_extra_args)
+      endif()
+
+      if(_run_args)
+        string(STRIP "${_run_args}" _run_args)
       endif()
 
       # check if this test is run with MPI and add the test run command
-      if((SUNDIALS_ADD_TEST_MPI_NPROCS) AND ((MPIEXEC_EXECUTABLE)
-                                             OR (SUNDIALS_TEST_MPIRUN_COMMAND)))
+      if(SUNDIALS_ADD_TEST_MPI_NPROCS AND (MPIEXEC_EXECUTABLE
+                                           OR SUNDIALS_TEST_MPIRUN_COMMAND))
         if(MPIEXEC_PREFLAGS)
           string(REPLACE " " ";" PREFLAGS "${MPIEXEC_PREFLAGS}")
         endif()
@@ -232,21 +257,24 @@ macro(SUNDIALS_ADD_TEST NAME EXECUTABLE)
             COMMAND
               ${MPI_EXEC_ARGS} ${MPIEXEC_NUMPROC_FLAG}
               ${SUNDIALS_ADD_TEST_MPI_NPROCS} ${PREFLAGS}
-              $<TARGET_FILE:${EXECUTABLE}> ${TEST_ARGS})
+              $<TARGET_FILE:${EXECUTABLE}> ${_run_args})
         else()
           add_test(
             NAME ${NAME}
             COMMAND
               ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG}
               ${SUNDIALS_ADD_TEST_MPI_NPROCS} ${PREFLAGS}
-              $<TARGET_FILE:${EXECUTABLE}> ${TEST_ARGS})
+              $<TARGET_FILE:${EXECUTABLE}> ${_run_args})
         endif()
       else()
-        add_test(NAME ${NAME} COMMAND $<TARGET_FILE:${EXECUTABLE}> ${TEST_ARGS})
+        add_test(NAME ${NAME} COMMAND $<TARGET_FILE:${EXECUTABLE}> ${_run_args})
       endif()
+      unset(_run_args)
 
     endif()
 
   endif()
+
+  unset(_add_test)
 
 endmacro()
