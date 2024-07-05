@@ -495,7 +495,7 @@ int run_tests(MRISTEP_METHOD_TYPE type, ProblemOptions& prob_opts,
     if (numfails) { std::cout << "Failed " << numfails << " tests\n"; }
     else { std::cout << "All checks passed\n"; }
 
-    cout << endl;
+    std::cout << std::endl;
     SUNContext_PrintAllocStats(sunctx, stdout, SUN_OUTPUTFORMAT_TABLE);
 
     // -------------------
@@ -540,7 +540,7 @@ int run_tests(MRISTEP_METHOD_TYPE type, ProblemOptions& prob_opts,
   }
   N_VDestroy(y);
 
-  cout << endl;
+  std::cout << std::endl;
   SUNContext_PrintAllocStats(sunctx, stdout, SUN_OUTPUTFORMAT_TABLE);
 
   return numfails;
