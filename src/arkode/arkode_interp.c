@@ -878,8 +878,6 @@ int arkInterpResize_Lagrange(ARKodeMem ark_mem, ARKInterp I,
   ---------------------------------------------------------------*/
 void arkInterpFree_Lagrange(ARKodeMem ark_mem, ARKInterp I)
 {
-  int i;
-
   /* if interpolation structure is NULL, just return */
   if (I == NULL) { return; }
 
