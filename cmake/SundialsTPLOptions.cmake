@@ -348,3 +348,19 @@ sundials_option(KokkosKernels_DIR PATH "Path to the root of a Kokkos Kernels ins
 sundials_option(KOKKOS_KERNELS_WORKS BOOL "Set to ON to force CMake to accept a given Kokkos configuration" OFF
                 DEPENDS_ON ENABLE_KOKKOS ENABLE_KOKKOS_KERNELS
                 ADVANCED)
+                
+                
+                # ---------------------------------------------------------------
+# Enable PSCTOOLKIT support?
+# ---------------------------------------------------------------
+  message(STATUS "Building psblas in '${ENABLE_PSCTOOLKIT}' mode.")
+sundials_option(ENABLE_PSCTOOLKIT BOOL "Enable PSCTOOLKIT support" OFF)
+  message(STATUS "Building psblas in '${ENABLE_PSCTOOLKIT}' mode.")
+sundials_option(PSCTOOLKIT_DIR PATH "Path to the root of a PSCTOOLKIT installation" "${PSCTOOLKIT_DIR}"
+                DEPENDS_ON ENABLE_PSCTOOLKIT)
+
+if(ENABLE_PSCTOOLKIT AND NOT ENABLE_MPI)
+  message(STATUS "MPI is required for PSCTOOLKIT support. Set ENABLE_MPI to ON.")
+endif()
+
+

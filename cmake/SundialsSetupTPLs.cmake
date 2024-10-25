@@ -203,3 +203,14 @@ if(ENABLE_XBRAID)
   include(SundialsXBRAID)
   list(APPEND SUNDIALS_TPL_LIST "XBRAID")
 endif()
+
+# -------------------------------------------------------------
+# Find (and test) psctoolkit
+# -------------------------------------------------------------
+
+
+if(ENABLE_PSCTOOLKIT)
+  include(SundialsPSCTOOLKIT)
+    list(APPEND SUNDIALS_TPL_LIST "PSCTOOLKIT")
+endif()
+

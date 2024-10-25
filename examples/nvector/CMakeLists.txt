@@ -15,6 +15,8 @@
 # examples/nvector level CMakeLists.txt for SUNDIALS
 # ---------------------------------------------------------------
 
+message(STATUS "EXAMPLES/NVECTOR CMAKE.")
+
 if(ENABLE_CALIPER AND SUNDIALS_BUILD_WITH_PROFILING)
   include_directories(${caliper_INCLUDE_DIR})
   set(EXE_EXTRA_LINK_LIBS ${EXE_EXTRA_LINK_LIBS} caliper)
@@ -98,3 +100,9 @@ endif()
 if(BUILD_NVECTOR_KOKKOS)
   add_subdirectory(kokkos)
 endif()
+
+if(ENABLE_PSCTOOLKIT AND PSCTOOLKIT_FOUND)
+  message(STATUS "EXAMPLES/NVECTOR add psblas.")
+  add_subdirectory(psblas)
+  message(STATUS "EXAMPLES/NVECTOR add psblas. Done!")
+endif(ENABLE_PSCTOOLKIT AND PSCTOOLKIT_FOUND)

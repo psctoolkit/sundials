@@ -154,6 +154,14 @@ else()
   message(STATUS "Building SUNDIALS in '${CMAKE_BUILD_TYPE}' mode.")
 endif()
 
+
+
+
+
+
+
+
+
 # ===============================================================
 # Build options to be processed first
 # ===============================================================
@@ -207,8 +215,11 @@ add_subdirectory(src)
 
 # Add selected examples to the build
 if(_BUILD_EXAMPLES)
+
+  message(STATUS "Building examples.")
   include(SundialsSetupTesting)
   add_subdirectory(examples)
+  message(STATUS "builded examples.")
 endif()
 
 # Add benchmarks to the build
@@ -225,6 +236,11 @@ if(SUNDIALS_ENABLE_EXTERNAL_ADDONS)
   add_subdirectory(external)
 endif()
 
+
+
+
+
+
 # ===============================================================
 # Install configuration header files and license file.
 # ===============================================================
@@ -238,6 +254,8 @@ install(FILES "${PROJECT_BINARY_DIR}/include/sundials/sundials_export.h"
 install(FILES "${PROJECT_BINARY_DIR}/include/sundials/sundials_config.h"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/sundials"
 )
+
+
 
 # install shared Fortran 2003 modules
 if(BUILD_FORTRAN_MODULE_INTERFACE)
@@ -296,3 +314,5 @@ export(
   FILE "${CMAKE_CURRENT_BINARY_DIR}/SUNDIALSTargets.cmake"
   NAMESPACE SUNDIALS::
 )
+
+message(STATUS "end main cmake.")

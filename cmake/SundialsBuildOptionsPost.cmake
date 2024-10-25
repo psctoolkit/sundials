@@ -112,6 +112,11 @@ sundials_option(BUILD_NVECTOR_KOKKOS BOOL "Build the NVECTOR_KOKKOS module (requ
                 ADVANCED)
 list(APPEND SUNDIALS_BUILD_LIST "BUILD_NVECTOR_KOKKOS")
 
+sundials_option(BUILD_NVECTOR_PSCTOOLKIT BOOL "Build the NVECTOR_PSCTOOLKIT module (requires PSCTOOLKIT)" ON
+                DEPENDS_ON ENABLE_PSCTOOLKIT
+                ADVANCED)
+list(APPEND SUNDIALS_BUILD_LIST "BUILD_NVECTOR_PSCTOOLKIT")
+
 
 # ---------------------------------------------------------------
 # Options to enable/disable build for SUNMATRIX modules.

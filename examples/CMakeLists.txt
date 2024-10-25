@@ -21,6 +21,9 @@
 # Configure compilers for installed examples
 # ===================================================================
 
+
+message(STATUS "EXAMPLES CMAKE.")
+
 foreach(lang ${_SUNDIALS_ENABLED_LANGS})
   if(ENABLE_MPI)
     if(DEFINED MPI_${lang}_COMPILER)
@@ -143,11 +146,13 @@ endif()
 # Add the nvector examples
 add_subdirectory(nvector)
 
+message(STATUS "add nvector.")
 # Add the sunmatrix examples
 add_subdirectory(sunmatrix)
-
+message(STATUS "add sunmatrix.")
 # Add the sunlinearsolver examples
 add_subdirectory(sunlinsol)
-
+message(STATUS "add sunlinsol.")
 # Add the sunnonlinearsolver examples
 add_subdirectory(sunnonlinsol)
+message(STATUS "add sunnonlinsol.")
