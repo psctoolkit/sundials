@@ -129,7 +129,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 include(GNUInstallDirs)
 mark_as_advanced(CLEAR CMAKE_INSTALL_LIBDIR)
 mark_as_advanced(CLEAR CMAKE_INSTALL_INCLUDEDIR)
-
+  message(STATUS "***********************I NCLUDE DIR SUNDIALS in '${CMAKE_INSTALL_INCLUDEDIR}' mode.")
 # Suffixes to use for static and shared targets.
 set(_STATIC_LIB_SUFFIX
     "_static"
@@ -296,6 +296,11 @@ install(
   NAMESPACE SUNDIALS::
   DESTINATION "${SUNDIALS_INSTALL_CMAKEDIR}"
 )
+
+
+
+
+  message(STATUS "binary dir. Is it build directory? ${CMAKE_CURRENT_BINARY_DIR}. Also ${PROJECT_BINARY_DIR};")
 
 # install SUNDIALSConfig.cmake
 configure_package_config_file(

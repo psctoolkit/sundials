@@ -17,10 +17,12 @@
 INSTALL(CODE "MESSAGE(\"\nInstall NVECTOR_PSBLAS\n\")")
 
 
-
+set(sundials_SOURCE_DIR ${PROJECT_SOURCE_DIR})
 
 #EXECUTE_PROCESS(COMMAND ./make2cmakeset.sh ${PSBLAS_INCLUDE_DIR} ${sundials_SOURCE_DIR}/src/nvector/psblas WORKING_DIRECTORY ${sundials_SOURCE_DIR}/src/nvector/psblas OUTPUT_QUIET ERROR_QUIET)
 INCLUDE(${sundials_SOURCE_DIR}/src/nvector/psblas/makeincinputcmake)
+
+  message(STATUS "Checking for PSCTOOLKIT ${sundials_SOURCE_DIR};")
 
 IF(MPI_C_COMPILER)
   # use MPI wrapper as the compiler
@@ -43,6 +45,8 @@ SET(shared_SOURCES
 SET(nvecpsblas_HEADERS
   ${sundials_SOURCE_DIR}/include/nvector/nvector_psblas.h
   )
+
+  message(STATUS "Checking for shared incl${nvecpsblas_HEADERS};")
 
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY and PSBLAS flags
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
@@ -71,7 +75,7 @@ IF(BUILD_STATIC_LIBS)
               STATIC ${nvecpsblas_SOURCES} ${shared_SOURCES})
   TARGET_COMPILE_DEFINITIONS(sundials_nvecpsblas_static PUBLIC ${PSBCDEFINES} ${PSBFDEFINES})
   TARGET_LINK_LIBRARIES(sundials_nvecpsblas_static ${LINKED_LIBRARIES} ${PSBLAS_LIBS1})
-  TARGET_INCLUDE_DIRECTORIES(sundials_nvecpsblas_static PUBLIC ${PSBLAS_INCLUDE} ${PSBLAS_MODULES} ${AMG_INCLUDE} ${AMG_MODULES} ${PSCTOOLKIT_DIR} ${AMG_DIR} ${PSCTOOLKIT_DIR}/lib ${AMG_DIR}/lib)
+  TARGET_INCLUDE_DIRECTORIES(sundials_nvecpsblas_static PUBLIC ${sundials_SOURCE_DIR}/include/ ${PROJECT_BINARY_DIR}/include ${PSBLAS_INCLUDE} ${PSBLAS_MODULES} ${AMG_INCLUDE} ${AMG_MODULES} ${PSCTOOLKIT_DIR} ${AMG_DIR} ${PSCTOOLKIT_DIR}/lib ${AMG_DIR}/lib)
   #TARGET_INCLUDE_DIRECTORIES(sundials_nvecpsblas_static PUBLIC ${AMG_INCLUDE} ${AMG_MODULES})
 
   SET_TARGET_PROPERTIES(sundials_nvecpsblas_static
