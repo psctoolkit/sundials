@@ -290,7 +290,7 @@ void N_VPrint_PSBLAS(N_Vector x)
 void N_VPrintFile_PSBLAS(N_Vector x, FILE* outfile)
 {
   sunindextype i, N;
-  realtype *xd;
+  sunrealtype *xd;
 
   xd = NULL;
 
@@ -444,9 +444,9 @@ void N_VSpace_PSBLAS(N_Vector v, sunindextype *lrw, sunindextype *liw)
   return;
 }
 
-realtype *N_VGetArrayPointer_PSBLAS(N_Vector v)
+sunrealtype *N_VGetArrayPointer_PSBLAS(N_Vector v)
 {
-  realtype *pointer;
+  sunrealtype *pointer;
 
   if(NV_PVEC_P(v) == NULL){
     pointer = NULL;
@@ -457,7 +457,7 @@ realtype *N_VGetArrayPointer_PSBLAS(N_Vector v)
   return(pointer);
 }
 
-void N_VSetArrayPointer_PSBLAS(realtype *v_data, N_Vector v)
+void N_VSetArrayPointer_PSBLAS(sunrealtype *v_data, N_Vector v)
 {
   printf("Warning : N_VSetArrayPointer is a dummy function for N_Vector PSBLAS\n");
 
@@ -466,9 +466,9 @@ void N_VSetArrayPointer_PSBLAS(realtype *v_data, N_Vector v)
 
 /* standard vector operations */
 
-void N_VLinearSum_PSBLAS(realtype a, N_Vector x, realtype b, N_Vector y, N_Vector z)
+void N_VLinearSum_PSBLAS(sunrealtype a, N_Vector x, sunrealtype b, N_Vector y, N_Vector z)
 {
-/*Performs the operation z = ax + by, where a and b are realtype scalars and
+/*Performs the operation z = ax + by, where a and b are sunrealtype scalars and
 x and y are of type N_Vector: z_i = a x_i + b y_i, i=0,...,n-1*/
 
   if(z == y){
@@ -481,9 +481,9 @@ x and y are of type N_Vector: z_i = a x_i + b y_i, i=0,...,n-1*/
   return;
 }
 
-void N_VConst_PSBLAS(realtype c, N_Vector z)
+void N_VConst_PSBLAS(sunrealtype c, N_Vector z)
 {
-/*Sets all components of the N_Vector z to realtype c: z_i = c, i=0,...,n-1   */
+/*Sets all components of the N_Vector z to sunrealtype c: z_i = c, i=0,...,n-1   */
   psb_i_t glob_row, ng;
   psb_l_t irow[1];
   double zt[1];
@@ -515,8 +515,8 @@ ONLY be called with an y that is guaranted to have all nonzero components*/
   return;
 }
 
-void N_VScale_PSBLAS(realtype c, N_Vector x, N_Vector z){
-/* Scales the N_Vector x by the realtype scalar c and returns the results in z.
+void N_VScale_PSBLAS(sunrealtype c, N_Vector x, N_Vector z){
+/* Scales the N_Vector x by the sunrealtype scalar c and returns the results in z.
 */
   //psb_c_dgescal(NV_PVEC_P(x),c,NV_PVEC_P(z),NV_DESCRIPTOR_P(x));
   if(z==x){
@@ -542,25 +542,25 @@ ONLY be called with an y that is guaranted to have all nonzero components*/
   return;
 }
 
-void N_VAddConst_PSBLAS(N_Vector x, realtype b, N_Vector z){
-/*Adds the realtype scalar b to all components of x and returns the result in
+void N_VAddConst_PSBLAS(N_Vector x, sunrealtype b, N_Vector z){
+/*Adds the sunrealtype scalar b to all components of x and returns the result in
 the N_Vector z: z_i = x_i + b_i*/
   psb_c_dgeaddconst(NV_PVEC_P(x),b,NV_PVEC_P(z),NV_DESCRIPTOR_P(x));
   return;
 }
 
-realtype N_VDotProd_PSBLAS(N_Vector x, N_Vector y){
+sunrealtype N_VDotProd_PSBLAS(N_Vector x, N_Vector y){
 /* Returns the value of the ordinary dot product of x and y                   */
   return(psb_c_dgedot(NV_PVEC_P(x),NV_PVEC_P(y),NV_DESCRIPTOR_P(x)));
 }
 
-realtype N_VMaxNorm_PSBLAS(N_Vector x){
+sunrealtype N_VMaxNorm_PSBLAS(N_Vector x){
 /* Returns the maximum norm of the N_Vector x*/
   return(psb_c_dgeamax(NV_PVEC_P(x),NV_DESCRIPTOR_P(x)));
 }
 
-realtype N_VWrmsNorm_PSBLAS(N_Vector x, N_Vector w){
-  realtype twonorm,global_length;
+sunrealtype N_VWrmsNorm_PSBLAS(N_Vector x, N_Vector w){
+  sunrealtype twonorm,global_length;
 
   twonorm = psb_c_dgenrm2_weight(NV_PVEC_P(x),NV_PVEC_P(w),NV_DESCRIPTOR_P(x));
   global_length = N_VGetLength_PSBLAS(x);
@@ -568,8 +568,8 @@ realtype N_VWrmsNorm_PSBLAS(N_Vector x, N_Vector w){
   return(twonorm/SUNRsqrt(global_length));
 }
 
-realtype N_VWrmsNormMask_PSBLAS(N_Vector x, N_Vector w, N_Vector id){
-  realtype twonorm,global_length;
+sunrealtype N_VWrmsNormMask_PSBLAS(N_Vector x, N_Vector w, N_Vector id){
+  sunrealtype twonorm,global_length;
 
   twonorm = psb_c_dgenrm2_weightmask(NV_PVEC_P(x),NV_PVEC_P(w),NV_PVEC_P(id),NV_DESCRIPTOR_P(x));
   global_length = N_VGetLength_PSBLAS(x);
@@ -577,23 +577,23 @@ realtype N_VWrmsNormMask_PSBLAS(N_Vector x, N_Vector w, N_Vector id){
   return(twonorm/SUNRsqrt(global_length));
 }
 
-realtype N_VMin_PSBLAS(N_Vector x){
+sunrealtype N_VMin_PSBLAS(N_Vector x){
 /* Returns the minimum of vector x*/
   return(psb_c_dgemin(NV_PVEC_P(x),NV_DESCRIPTOR_P(x)));
 }
 
-realtype N_VWL2Norm_PSBLAS(N_Vector x, N_Vector w){
+sunrealtype N_VWL2Norm_PSBLAS(N_Vector x, N_Vector w){
 /* Returns the weighted 2-norm of the vector x with respect to the weights w,
 i.e., res = ||w.*x||_2 = sqrt( sum_{j} (w_j x_j)^2 )*/
   return(psb_c_dgenrm2_weight(NV_PVEC_P(x),NV_PVEC_P(w),NV_DESCRIPTOR_P(x)));
 }
 
-realtype N_VL1Norm_PSBLAS(N_Vector x){
+sunrealtype N_VL1Norm_PSBLAS(N_Vector x){
 /* Returns the 1-norm of the vector x */
   return(psb_c_dgenrmi(NV_PVEC_P(x),NV_DESCRIPTOR_P(x)));
 }
 
-void N_VCompare_PSBLAS(realtype c, N_Vector x, N_Vector z){
+void N_VCompare_PSBLAS(sunrealtype c, N_Vector x, N_Vector z){
 /* Compare the vector x with the real constant c and put the result in z, i.e.,
 z_i = 1 if |x_i| < c else z_i = 0 for i=1,...,length(x)*/
    psb_c_dgecmp(NV_PVEC_P(x),c,NV_PVEC_P(z),NV_DESCRIPTOR_P(x));
@@ -601,7 +601,7 @@ z_i = 1 if |x_i| < c else z_i = 0 for i=1,...,length(x)*/
    return;
 }
 
-booleantype N_VInvTest_PSBLAS(N_Vector x, N_Vector z){
+sunbooleantype N_VInvTest_PSBLAS(N_Vector x, N_Vector z){
 /* Computes z_i = 1/x_i iff x_i != 0, returns true if every test was positive,
 otherwise returns false */
   psb_i_t info;
@@ -615,7 +615,7 @@ otherwise returns false */
   }
 }
 
-booleantype N_VConstrMask_PSBLAS(N_Vector c, N_Vector x, N_Vector m){
+sunbooleantype N_VConstrMask_PSBLAS(N_Vector c, N_Vector x, N_Vector m){
   bool t;
 
   psb_c_dmask(NV_PVEC_P(c),NV_PVEC_P(x),NV_PVEC_P(m), &t, NV_DESCRIPTOR_P(x));
@@ -628,7 +628,7 @@ booleantype N_VConstrMask_PSBLAS(N_Vector c, N_Vector x, N_Vector m){
 
 }
 
-realtype N_VMinQuotient_PSBLAS(N_Vector num, N_Vector denom){
+sunrealtype N_VMinQuotient_PSBLAS(N_Vector num, N_Vector denom){
 /* Returns min_i num_i/denom_i for the denom_i != 0 */
   return(psb_c_dminquotient(NV_PVEC_P(num),NV_PVEC_P(denom),NV_DESCRIPTOR_P(num)));
 }
@@ -638,7 +638,7 @@ realtype N_VMinQuotient_PSBLAS(N_Vector num, N_Vector denom){
 * fused vector operations
 * -----------------------------------------------------------------
 */
-int N_VLinearCombination_PSBLAS(int nvec, realtype* c, N_Vector* V,N_Vector z){
+int N_VLinearCombination_PSBLAS(int nvec, sunrealtype* c, N_Vector* V,N_Vector z){
   psb_i_t      ierr;
   sunindextype j, N;
 
@@ -672,7 +672,7 @@ int N_VLinearCombination_PSBLAS(int nvec, realtype* c, N_Vector* V,N_Vector z){
   return(ierr);
 
 };
-int N_VScaleAddMulti_PSBLAS(int nvec, realtype* a, N_Vector x,N_Vector* Y, N_Vector* Z){
+int N_VScaleAddMulti_PSBLAS(int nvec, sunrealtype* a, N_Vector x,N_Vector* Y, N_Vector* Z){
 
   int j;
 
@@ -693,7 +693,7 @@ int N_VScaleAddMulti_PSBLAS(int nvec, realtype* a, N_Vector x,N_Vector* Y, N_Vec
 
   return(1);
 };
-int N_VDotProdMulti_PSBLAS(int nvec, N_Vector x, N_Vector *Y, realtype* dotprods){
+int N_VDotProdMulti_PSBLAS(int nvec, N_Vector x, N_Vector *Y, sunrealtype* dotprods){
 
   int j;
   for(j = 0; j < nvec; j++){
@@ -708,7 +708,7 @@ int N_VDotProdMulti_PSBLAS(int nvec, N_Vector x, N_Vector *Y, realtype* dotprods
 * vector array operations
 * -----------------------------------------------------------------
 */
-int N_VLinearSumVectorArray_PSBLAS(int nvec,realtype a, N_Vector* X, realtype b, N_Vector* Y, N_Vector* Z){
+int N_VLinearSumVectorArray_PSBLAS(int nvec,sunrealtype a, N_Vector* X, sunrealtype b, N_Vector* Y, N_Vector* Z){
 
  int j;
 
@@ -719,7 +719,7 @@ int N_VLinearSumVectorArray_PSBLAS(int nvec,realtype a, N_Vector* X, realtype b,
  return(0);
 
 };
-int N_VScaleVectorArray_PSBLAS(int nvec, realtype* c, N_Vector* X, N_Vector* Z){
+int N_VScaleVectorArray_PSBLAS(int nvec, sunrealtype* c, N_Vector* X, N_Vector* Z){
 
   int j;
 
@@ -730,7 +730,7 @@ int N_VScaleVectorArray_PSBLAS(int nvec, realtype* c, N_Vector* X, N_Vector* Z){
   return(0);
 };
 
-int N_VConstVectorArray_PSBLAS(int nvecs, realtype c, N_Vector* Z){
+int N_VConstVectorArray_PSBLAS(int nvecs, sunrealtype c, N_Vector* Z){
   int j;
 
   for(j=0;j<nvecs;j++){
@@ -740,14 +740,14 @@ int N_VConstVectorArray_PSBLAS(int nvecs, realtype c, N_Vector* Z){
   return(0);
 };
 
-int N_VWrmsNormVectorArray_PSBLAS(int nvecs, N_Vector* X, N_Vector* W, realtype* nrm){
+int N_VWrmsNormVectorArray_PSBLAS(int nvecs, N_Vector* X, N_Vector* W, sunrealtype* nrm){
   int j;
   for(j=0; j<nvecs; j++){
     nrm[j] = N_VWrmsNorm(X[j],W[j]);
   }
   return(0);
 };
-int N_VWrmsNormMaskVectorArray_PSBLAS(int nvec, N_Vector* X, N_Vector* W, N_Vector id,realtype* nrm){
+int N_VWrmsNormMaskVectorArray_PSBLAS(int nvec, N_Vector* X, N_Vector* W, N_Vector id,sunrealtype* nrm){
   int j;
 
   for(j=0; j<nvec; j++){
@@ -755,7 +755,7 @@ int N_VWrmsNormMaskVectorArray_PSBLAS(int nvec, N_Vector* X, N_Vector* W, N_Vect
   }
   return(0);
 };
-int N_VScaleAddMultiVectorArray_PSBLAS(int nvec, int nsum, realtype* a, N_Vector* X, N_Vector** Y, N_Vector** Z){
+int N_VScaleAddMultiVectorArray_PSBLAS(int nvec, int nsum, sunrealtype* a, N_Vector* X, N_Vector** Y, N_Vector** Z){
   int          i, j, retval;
   sunindextype k, N;
 
@@ -824,12 +824,12 @@ int N_VScaleAddMultiVectorArray_PSBLAS(int nvec, int nsum, realtype* a, N_Vector
     }
     return(0);
 };
-int N_VLinearCombinationVectorArray_PSBLAS(int nvec, int nsum, realtype* c, N_Vector** X, N_Vector* Z){
+int N_VLinearCombinationVectorArray_PSBLAS(int nvec, int nsum, sunrealtype* c, N_Vector** X, N_Vector* Z){
   int          i; /* vector arrays index in summation [0,nsum) */
   int          j; /* vector index in vector array     [0,nvec) */
   sunindextype k; /* element index in vector                   */
 
-  realtype*    ctmp;
+  sunrealtype*    ctmp;
   N_Vector*    Y;
 
   /* invalid number of vectors */
@@ -877,7 +877,7 @@ int N_VLinearCombinationVectorArray_PSBLAS(int nvec, int nsum, realtype* c, N_Ve
   /* should have called N_VScaleVectorArray */
   if (nsum == 1) {
 
-    ctmp = (realtype*) malloc(nvec * sizeof(realtype));
+    ctmp = (sunrealtype*) malloc(nvec * sizeof(sunrealtype));
 
     for (j=0; j<nvec; j++) {
       ctmp[j] = c[0];
@@ -941,7 +941,7 @@ int N_VLinearCombinationVectorArray_PSBLAS(int nvec, int nsum, realtype* c, N_Ve
  * -----------------------------------------------------------------
  */
 
-int N_VEnableFusedOps_PSBLAS(N_Vector v, booleantype tf)
+int N_VEnableFusedOps_PSBLAS(N_Vector v, sunbooleantype tf)
 {
   /* check that vector is non-NULL */
   if (v == NULL) return(-1);
@@ -982,7 +982,7 @@ int N_VEnableFusedOps_PSBLAS(N_Vector v, booleantype tf)
 }
 
 
-int N_VEnableLinearCombination_PSBLAS(N_Vector v, booleantype tf)
+int N_VEnableLinearCombination_PSBLAS(N_Vector v, sunbooleantype tf)
 {
   /* check that vector is non-NULL */
   if (v == NULL) return(-1);
@@ -1000,7 +1000,7 @@ int N_VEnableLinearCombination_PSBLAS(N_Vector v, booleantype tf)
   return(0);
 }
 
-int N_VEnableScaleAddMulti_PSBLAS(N_Vector v, booleantype tf)
+int N_VEnableScaleAddMulti_PSBLAS(N_Vector v, sunbooleantype tf)
 {
   /* check that vector is non-NULL */
   if (v == NULL) return(-1);
@@ -1018,7 +1018,7 @@ int N_VEnableScaleAddMulti_PSBLAS(N_Vector v, booleantype tf)
   return(0);
 }
 
-int N_VEnableDotProdMulti_PSBLAS(N_Vector v, booleantype tf)
+int N_VEnableDotProdMulti_PSBLAS(N_Vector v, sunbooleantype tf)
 {
   /* check that vector is non-NULL */
   if (v == NULL) return(-1);
@@ -1036,7 +1036,7 @@ int N_VEnableDotProdMulti_PSBLAS(N_Vector v, booleantype tf)
   return(0);
 }
 
-int N_VEnableLinearSumVectorArray_PSBLAS(N_Vector v, booleantype tf)
+int N_VEnableLinearSumVectorArray_PSBLAS(N_Vector v, sunbooleantype tf)
 {
   /* check that vector is non-NULL */
   if (v == NULL) return(-1);
@@ -1054,7 +1054,7 @@ int N_VEnableLinearSumVectorArray_PSBLAS(N_Vector v, booleantype tf)
   return(0);
 }
 
-int N_VEnableScaleVectorArray_PSBLAS(N_Vector v, booleantype tf)
+int N_VEnableScaleVectorArray_PSBLAS(N_Vector v, sunbooleantype tf)
 {
   /* check that vector is non-NULL */
   if (v == NULL) return(-1);
@@ -1072,7 +1072,7 @@ int N_VEnableScaleVectorArray_PSBLAS(N_Vector v, booleantype tf)
   return(0);
 }
 
-int N_VEnableConstVectorArray_PSBLAS(N_Vector v, booleantype tf)
+int N_VEnableConstVectorArray_PSBLAS(N_Vector v, sunbooleantype tf)
 {
   /* check that vector is non-NULL */
   if (v == NULL) return(-1);
@@ -1090,7 +1090,7 @@ int N_VEnableConstVectorArray_PSBLAS(N_Vector v, booleantype tf)
   return(0);
 }
 
-int N_VEnableWrmsNormVectorArray_PSBLAS(N_Vector v, booleantype tf)
+int N_VEnableWrmsNormVectorArray_PSBLAS(N_Vector v, sunbooleantype tf)
 {
   /* check that vector is non-NULL */
   if (v == NULL) return(-1);
@@ -1108,7 +1108,7 @@ int N_VEnableWrmsNormVectorArray_PSBLAS(N_Vector v, booleantype tf)
   return(0);
 }
 
-int N_VEnableWrmsNormMaskVectorArray_PSBLAS(N_Vector v, booleantype tf)
+int N_VEnableWrmsNormMaskVectorArray_PSBLAS(N_Vector v, sunbooleantype tf)
 {
   /* check that vector is non-NULL */
   if (v == NULL) return(-1);
@@ -1126,7 +1126,7 @@ int N_VEnableWrmsNormMaskVectorArray_PSBLAS(N_Vector v, booleantype tf)
   return(0);
 }
 
-int N_VEnableScaleAddMultiVectorArray_PSBLAS(N_Vector v, booleantype tf)
+int N_VEnableScaleAddMultiVectorArray_PSBLAS(N_Vector v, sunbooleantype tf)
 {
   /* check that vector is non-NULL */
   if (v == NULL) return(-1);
@@ -1144,7 +1144,7 @@ int N_VEnableScaleAddMultiVectorArray_PSBLAS(N_Vector v, booleantype tf)
   return(0);
 }
 
-int N_VEnableLinearCombinationVectorArray_PSBLAS(N_Vector v, booleantype tf)
+int N_VEnableLinearCombinationVectorArray_PSBLAS(N_Vector v, sunbooleantype tf)
 {
   /* check that vector is non-NULL */
   if (v == NULL) return(-1);
