@@ -101,8 +101,10 @@ if(BUILD_NVECTOR_KOKKOS)
   add_subdirectory(kokkos)
 endif()
 
+
+#TODO: add BUILD_NVECTOR_PSCTOOLKIT variable plus if statement to be compliant to the
 if(ENABLE_PSCTOOLKIT AND PSCTOOLKIT_FOUND)
   message(STATUS "EXAMPLES/NVECTOR add psblas.")
-  #add_subdirectory(psblas)
+  add_subdirectory(psblas)
   message(STATUS "EXAMPLES/NVECTOR add psblas. Done!")
 endif(ENABLE_PSCTOOLKIT AND PSCTOOLKIT_FOUND)

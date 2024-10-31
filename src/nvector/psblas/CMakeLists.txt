@@ -92,7 +92,7 @@ ENDIF(BUILD_STATIC_LIBS)
 #  - Set the library name and make sure it is not deleted
 #  - Set VERSION and SOVERSION for shared libraries
 #  - Install the nvecpsblas library
-IF(BUILD_SHARED_LIBS)
+IF(BUILD_SHARED_LIBS AND FALSE)
   MESSAGE(STATUS "Found SHARED --")
   ADD_LIBRARY(sundials_nvecpsblas_shared
               SHARED ${nvecpsblas_SOURCES} ${shared_SOURCES})
@@ -110,7 +110,7 @@ IF(BUILD_SHARED_LIBS)
   SET_TARGET_PROPERTIES(sundials_nvecpsblas_shared
     PROPERTIES VERSION ${nveclib_VERSION} SOVERSION ${nveclib_SOVERSION})
   INSTALL(TARGETS sundials_nvecpsblas_shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
-ENDIF(BUILD_SHARED_LIBS)
+ENDIF(BUILD_SHARED_LIBS AND FALSE)
 
 # Install the nvecpsblas header files
 INSTALL(FILES ${nvecpsblas_HEADERS} DESTINATION include/nvector)

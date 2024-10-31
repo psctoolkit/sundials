@@ -31,12 +31,16 @@ SET(nvector_examples_dependencies
 
 # Add source directory to include directories
 INCLUDE_DIRECTORIES(. ..)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include/ ${PROJECT_BINARY_DIR}/include ${PSBLAS_INCLUDE} ${PSBLAS_MODULES} ${AMG_INCLUDE} ${AMG_MODULES} ${PSCTOOLKIT_DIR} ${AMG_DIR} ${PSCTOOLKIT_DIR}/lib ${AMG_DIR}/lib)
 
 # Specify libraries to link against (through the target that was used to
 # generate them) based on the value of the variable LINK_LIBRARY_TYPE
-IF(LINK_LIBRARY_TYPE MATCHES "static")
+#IF(LINK_LIBRARY_TYPE MATCHES "static")
+IF(BUILD_STATIC_LIBS)
+  message(STATUS "EXAMPLES/NVECTOR/psblas STATICS WAAAAAAAAAAAAAAAAAAAAAAAAAAAA. ${LINKED_LIBRARIES};")
   SET(NVECS_LIB sundials_nvecpsblas_static)
 ELSE()
+  message(STATUS "EXAMPLES/NVECTOR/psblas SHARED WAAAAAAAAAAAAAAAAAAAAAAAAAAAA. ${SUNDIALS_LIBS};")
   SET(NVECS_LIB sundials_nvecpsblas_shared)
 ENDIF()
 
@@ -72,14 +76,16 @@ FOREACH(example_tuple ${nvector_psblas_examples})
   IF(NOT TARGET ${example})
     # example source files
     ADD_EXECUTABLE(${example} ${example}.c
-      ../test_nvector.c ../../../src/sundials/sundials_nvector.c)
+      ../../../src/sundials/sundials_nvector.c)
+          # example source files
+
 
     # folder to organize targets in an IDE
     SET_TARGET_PROPERTIES(${example} PROPERTIES FOLDER "Examples")
-
+    target_link_libraries(${example} test_nvector_obj test_nvectormpi_obj)
     # libraries to link against
     TARGET_COMPILE_DEFINITIONS(${example} PUBLIC ${PSBCDEFINES} ${PSBFDEFINES})
-    TARGET_LINK_LIBRARIES(${example} ${SUNDIALS_LIBS} ${LINKED_LIBRARIES})
+    TARGET_LINK_LIBRARIES(${example} ${SUNDIALS_LIBS} ${LINKED_LIBRARIES} )
     TARGET_INCLUDE_DIRECTORIES(${example} PUBLIC ${PSBLAS_INCLUDE} ${PSBLAS_MODULES})
 
     IF(NOT MPI_C_COMPILER)
@@ -142,7 +148,7 @@ IF(EXAMPLES_INSTALL)
     ${PROJECT_BINARY_DIR}/examples/nvector/psblas/CMakeLists.txt
     @ONLY
     )
-
+  message(STATUS "Examples Dependencies to be configured: ${examples_dependencies};")
   # install CMakelists.txt
   INSTALL(
     FILES ${PROJECT_BINARY_DIR}/examples/nvector/psblas/CMakeLists.txt
@@ -170,4 +176,4 @@ IF(EXAMPLES_INSTALL)
 
 ENDIF(EXAMPLES_INSTALL)
 
-  message(STATUS "EXAMPLES/NVECTOR/psblas add psblas.")
+  message(STATUS "EXAMPLES/NVECTOR/psblas add psblas. ${SUNDIALS_LIBS};")

@@ -273,17 +273,17 @@ int main(int argc, char *argv[])
 /* ----------------------------------------------------------------------
  * Implementation specific utility functions for vector tests
  * --------------------------------------------------------------------*/
-int check_ans(realtype ans, N_Vector X, sunindextype local_length)
+int check_ans(sunrealtype ans, N_Vector X, sunindextype local_length)
 {
   int          failure = 0;
   sunindextype i;
-  realtype     *Xdata;
+  sunrealtype     *Xdata;
 
   Xdata = N_VGetArrayPointer(X);
 
   /* check vector data */
   for (i = 0; i < local_length; i++) {
-    failure += FNEQ(Xdata[i], ans);
+    failure += SUNRCompare(Xdata[i], ans);
     if(failure){
       printf("%f /= %f\n",Xdata[i], ans);
     }
@@ -292,13 +292,13 @@ int check_ans(realtype ans, N_Vector X, sunindextype local_length)
   return (failure > ZERO) ? (1) : (0);
 }
 
-booleantype has_data(N_Vector X)
+sunbooleantype has_data(N_Vector X)
 {
   /* check if data array is non-null */
   return (N_VGetArrayPointer(X) == NULL) ? SUNFALSE : SUNTRUE;
 }
 
-void set_element(N_Vector X, sunindextype i, realtype val)
+void set_element(N_Vector X, sunindextype i, sunrealtype val)
 {
   psb_l_t irow[1];
   double value[1];
@@ -312,7 +312,7 @@ void set_element(N_Vector X, sunindextype i, realtype val)
   N_VAsb_PSBLAS(X);
 }
 
-realtype get_element(N_Vector X, sunindextype i)
+sunrealtype get_element(N_Vector X, sunindextype i)
 {
   /* get i-th element of data array */
   return (N_VGetArrayPointer_PSBLAS(X))[i];
@@ -333,14 +333,14 @@ double max_time(N_Vector X, double time)
   return(maxt);
 }
 
-void sync_device()
+void sync_device(N_Vector X)
 {
   /* not running on GPU, just return */
   return;
 }
 
 void set_element_range(N_Vector X, sunindextype is, sunindextype ie,
-                       realtype val)
+                       sunrealtype val)
 {
   sunindextype i;
 
