@@ -75,7 +75,7 @@ IF(BUILD_STATIC_LIBS)
               STATIC ${nvecpsblas_SOURCES} ${shared_SOURCES})
   TARGET_COMPILE_DEFINITIONS(sundials_nvecpsblas_static PUBLIC ${PSBCDEFINES} ${PSBFDEFINES})
   TARGET_LINK_LIBRARIES(sundials_nvecpsblas_static ${LINKED_LIBRARIES} ${PSBLAS_LIBS1})
-  TARGET_INCLUDE_DIRECTORIES(sundials_nvecpsblas_static PUBLIC ${sundials_SOURCE_DIR}/include/ ${PROJECT_BINARY_DIR}/include ${PSBLAS_INCLUDE} ${PSBLAS_MODULES} ${AMG_INCLUDE} ${AMG_MODULES} ${PSCTOOLKIT_DIR} ${AMG_DIR} ${PSCTOOLKIT_DIR}/lib ${AMG_DIR}/lib)
+  TARGET_INCLUDE_DIRECTORIES(sundials_nvecpsblas_static PUBLIC ${sundials_SOURCE_DIR}/include/ ${PROJECT_BINARY_DIR}/include ${PSBLAS_INCLUDE} ${PSBLAS_MODULES} ${AMG_INCLUDE} ${AMG_MODULES}${PSCTOOLKIT_DIR} ${AMG_DIR} ${PSCTOOLKIT_DIR}/lib ${AMG_DIR}/lib)  #TODO: remove ${sundials_SOURCE_DIR}/include
   #TARGET_INCLUDE_DIRECTORIES(sundials_nvecpsblas_static PUBLIC ${AMG_INCLUDE} ${AMG_MODULES})
 
   SET_TARGET_PROPERTIES(sundials_nvecpsblas_static
