@@ -58,3 +58,7 @@ endif()
 if(BUILD_SUNMATRIX_SLUNRLOC)
   add_subdirectory(slunrloc)
 endif()
+
+if(ENABLE_PSCTOOLKIT AND PSCTOOLKIT_FOUND)
+  add_subdirectory(psblas)
+endif(ENABLE_PSCTOOLKIT AND PSCTOOLKIT_FOUND)
