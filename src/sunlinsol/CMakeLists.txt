@@ -86,3 +86,7 @@ endif()
 if(BUILD_SUNLINSOL_SUPERLUMT)
   add_subdirectory(superlumt)
 endif()
+
+if(ENABLE_PSCTOOLKIT AND PSCTOOLKIT_FOUND)
+  add_subdirectory(psblas)
+endif(ENABLE_PSCTOOLKIT AND PSCTOOLKIT_FOUND)

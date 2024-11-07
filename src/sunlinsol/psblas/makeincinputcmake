@@ -1,0 +1,13 @@
+
+SET(PSBDEFINES -DHAVE_LAPACK -DHAVE_MOLD -DHAVE_EXTENDS_TYPE_OF -DHAVE_SAME_TYPE_AS -DHAVE_FLUSH_STMT -DMPI_MOD -DHAVE_LAPACK -DHAVE_FLUSH_STMT -DLPK8 -DIPK4 -DMPI_MOD )
+
+SET(PSBCDEFINES  -DIPK4 -DLPK8 -DLowerUnderscore -DPtr64Bits )
+
+SET(PSBLDLIBS  -pthread -L/usr/lib/x86_64-linux-gnu/openmpi/lib -lmpi_cxx -lmpi -lopenblas -lstdc++)
+
+SET(PSBLAS_LIBS -lpsb_krylov -lpsb_prec -lpsb_util -lpsb_base -L/usr/local/psblas//lib -lpsb_cbind)
+
+SET(PSBRSBLDLIBS )
+
+SET(PSBGPULDLIBS  )
+
