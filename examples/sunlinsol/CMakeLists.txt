@@ -87,3 +87,8 @@ endif()
 if(BUILD_SUNLINSOL_SUPERLUDIST)
   add_subdirectory(superludist)
 endif()
+
+
+if(ENABLE_PSCTOOLKIT AND PSCTOOLKIT_FOUND)
+  add_subdirectory(psblas)
+endif(ENABLE_PSCTOOLKIT AND PSCTOOLKIT_FOUND)
