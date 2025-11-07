@@ -10,7 +10,7 @@ echo "The Make.inc files are in "$liblocation
 cat <<EOF > $liblocation/Makefile
 include $liblocation/psblas/include/Make.inc.psblas
 include $liblocation/amg4psblas/include/Make.inc.amg4psblas
-include $liblocation/psblas-ext/include/Make.inc.ext
+#include $liblocation/psblas-ext/include/Make.inc.ext
 all:
 	@echo "" > $wheretoputfile/makeincinputcmake
 	@echo "SET(PSBDEFINES "\${AMGFDEFINES}")\n" >> $wheretoputfile/makeincinputcmake
