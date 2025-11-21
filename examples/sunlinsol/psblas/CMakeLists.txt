@@ -139,9 +139,9 @@ FOREACH(example_tuple ${sunlinsol_psblas_examples})
       amgopts.inp
       ../test_sunlinsol.h
       ../test_sunlinsol.c
-      ${sundials_SOURCE_DIR}/src/sundials/sundials_linearsolver.c
-      ${sundials_SOURCE_DIR}/src/sundials/sundials_nvector.c
-      ${sundials_SOURCE_DIR}/src/sundials/sundials_matrix.c
+      ${PROJECT_SOURCE_DIR}/src/sundials/sundials_linearsolver.c
+      ${PROJECT_SOURCE_DIR}/src/sundials/sundials_nvector.c
+      ${PROJECT_SOURCE_DIR}/src/sundials/sundials_matrix.c
       DESTINATION ${EXAMPLES_INSTALL_PATH}/sunlinsol/psblas)
   ENDIF()
 
