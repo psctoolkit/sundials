@@ -36,7 +36,7 @@
 #include "psb_c_dbase.h"
 #include "psb_util_cbind.h"
 #include "psb_prec_cbind.h"
-#include "psb_krylov_cbind.h"
+#include "psb_linsolve_cbind.h"
 #include "amg_c_dprec.h"
 #include "amg_const.h"
 
