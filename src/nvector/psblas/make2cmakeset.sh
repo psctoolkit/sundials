@@ -13,12 +13,12 @@ include $liblocation/amg4psblas/include/Make.inc.amg4psblas
 #include $liblocation/psblas-ext/include/Make.inc.ext
 all:
 	@echo "" > $wheretoputfile/makeincinputcmake
-	@echo "SET(PSBDEFINES "\${AMGFDEFINES}")\n" >> $wheretoputfile/makeincinputcmake
-	@echo "SET(PSBCDEFINES "\${AMGCDEFINES}")\n" >> $wheretoputfile/makeincinputcmake
-	@echo "SET(PSBLDLIBS "\${AMGLDLIBS}")\n" >> $wheretoputfile/makeincinputcmake
-	@echo "SET(PSBLAS_LIBS "\${PSBLAS_LIBS} "-lpsb_cbind)\n" >> $wheretoputfile/makeincinputcmake
-	@echo "SET(PSBRSBLDLIBS "\${LIBRSB_LIBS}")\n" >> $wheretoputfile/makeincinputcmake
-	@echo "SET(PSBGPULDLIBS "\${SPGPU_LIBS} \${CUDA_LIBS}")\n" >> $wheretoputfile/makeincinputcmake
+	@echo -e "SET(PSBDEFINES "\${AMGFDEFINES}")\n" >> $wheretoputfile/makeincinputcmake
+	@echo  -e "SET(PSBCDEFINES "\${AMGCDEFINES}")\n" >> $wheretoputfile/makeincinputcmake
+	@echo  -e "SET(PSBLDLIBS "\${AMGLDLIBS}")\n" >> $wheretoputfile/makeincinputcmake
+	@echo  -e "SET(PSBLAS_LIBS "\${PSBLAS_LIBS} "-lpsb_cbind)\n" >> $wheretoputfile/makeincinputcmake
+	@echo  -e "SET(PSBRSBLDLIBS "\${LIBRSB_LIBS}")\n" >> $wheretoputfile/makeincinputcmake
+	@echo  -e "SET(PSBGPULDLIBS "\${SPGPU_LIBS} \${CUDA_LIBS}")\n" >> $wheretoputfile/makeincinputcmake
 EOF
 
 echo "Creating input file for CMake : makeinputcmake"
