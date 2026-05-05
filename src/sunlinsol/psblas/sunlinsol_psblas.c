@@ -151,6 +151,12 @@ int SUNLinSolInitialize_PSBLAS(SUNLinearSolver S){
         if(iam == 0) printf("Failure on AMG4PSBLAS precinit %d ptype %s\n",ret,LS_PTYPE_P(S));
         return(SUNLS_PSET_FAIL_UNREC);
       }
+      ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_FILTER","FILTER");
+      if(ret != 0){
+        if(iam == 0) printf("Failure on AMG4PSBLAS precsetc %d ptype %s\n",ret,LS_PTYPE_P(S));
+        return(SUNLS_PSET_FAIL_UNREC);
+      }
+      
   }
   if(iam==0) printf("The %s solver with %s preconditioner has been initialized\n",LS_METHD_P(S),LS_PTYPE_P(S));
 
@@ -227,11 +233,15 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
                                             sunrealtype tol){
   psb_i_t ret;
 
-  PSBLAS_CONTENT(S)->options.eps = tol;
+  psb_c_DefaultSolverOptions(&(PSBLAS_CONTENT(S)->options));
+  PSBLAS_CONTENT(S)->options.eps  = tol;
+  PSBLAS_CONTENT(S)->options.itrace = 1;
+  PSBLAS_CONTENT(S)->options.irst = 10;
   N_VAsb_PSBLAS(b);
   N_VAsb_PSBLAS(x);
   /* Solve the linear system in PSBLAS, again we need to make a distinction
    * regarding the used preconditioner                                        */
+  psb_c_PrintSolverOptions(&(PSBLAS_CONTENT(S)->options));
   if( strcmp(LS_PTYPE_P(S),"NONE") == 0||
       strcmp(LS_PTYPE_P(S),"BJAC") == 0 ||
       strcmp(LS_PTYPE_P(S),"DIAG") == 0 ){

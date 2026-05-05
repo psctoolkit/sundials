@@ -21,8 +21,8 @@
 #include <sundials/sundials_types.h>
 #include <nvector/nvector_psblas.h>
 #include <sundials/sundials_math.h>
+#include <sundials/sundials_context.h>
 #include "test_nvector.h"
-
 #include <mpi.h>
 
 /* ----------------------------------------------------------------------
@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
   psb_l_t      i;
   /* MPI Comminicator */
   MPI_Comm     comm;
+  SUNContext  sunctx;
 
   /* Get processor number and total number of processes */
   cctxt = psb_c_new_ctxt();
@@ -56,7 +57,7 @@ int main(int argc, char *argv[])
   psb_c_info(*cctxt,&myid,&nprocs);
   psb_c_get_i_ctxt(*(cctxt),&ictxt,&info);
   comm = MPI_Comm_f2c(ictxt);
-
+  info = SUNContext_Create(comm,&sunctx);
   /* check inputs */
   if (argc < 3) {
     if (myid == 0)
@@ -117,14 +118,14 @@ int main(int argc, char *argv[])
   }
 
   /* Create new vectors */
-  W = N_VNewEmpty_PSBLAS(cctxt, cdh);
+  W = N_VNewEmpty_PSBLAS(cctxt, cdh, sunctx);
   if (W == NULL) {
     if (myid == 0) printf("FAIL: Unable to create a new empty vector \n\n");
     psb_c_abort(*cctxt);
   }
   //
   //
-  X = N_VNew_PSBLAS(cctxt, cdh);
+  X = N_VNew_PSBLAS(cctxt, cdh, sunctx);
   if (X == NULL) {
     N_VDestroy_PSBLAS(W);
     if (myid == 0) printf("FAIL: Unable to create a new vector \n\n");
@@ -184,12 +185,13 @@ int main(int argc, char *argv[])
   fails += Test_N_VInvTest(X, Z, local_length, myid);
   fails += Test_N_VConstrMask(X, Y, Z, local_length, myid);
   fails += Test_N_VMinQuotient(X, Y, local_length, myid);
+      
 
   /* Fused and vector array operations tests (disabled) */
   if (myid == 0) printf("\nTesting fused and vector array operations (disabled):\n\n");
 
   /* create vector and disable all fused and vector array operations */
-  U = N_VNew_PSBLAS(cctxt, cdh);
+  U = N_VNew_PSBLAS(cctxt, cdh, sunctx);
   retval = N_VEnableFusedOps_PSBLAS(U, SUNFALSE);
   if (U == NULL || retval != 0) {
     N_VDestroy_PSBLAS(W);
@@ -218,7 +220,7 @@ int main(int argc, char *argv[])
   if (myid == 0) printf("\nTesting fused and vector array operations (enabled):\n\n");
 
   /* create vector and enable all fused and vector array operations */
-  V = N_VNew_PSBLAS(cctxt, cdh);
+  V = N_VNew_PSBLAS(cctxt, cdh, sunctx);
   retval = N_VEnableFusedOps_PSBLAS(V, SUNTRUE);
   if (V == NULL || retval != 0) {
     N_VDestroy_PSBLAS(W);
@@ -243,7 +245,6 @@ int main(int argc, char *argv[])
   fails += Test_N_VWrmsNormMaskVectorArray(V, local_length, myid);
   fails += Test_N_VScaleAddMultiVectorArray(V, local_length, myid);
   fails += Test_N_VLinearCombinationVectorArray(V, local_length, myid);
-
   /* Free vectors */
   N_VDestroy_PSBLAS(W);
   N_VDestroy_PSBLAS(X);
@@ -303,19 +304,23 @@ void set_element(N_Vector X, sunindextype i, sunrealtype val)
   psb_l_t irow[1];
   double value[1];
   psb_i_t myid,nprocs;
-
-  psb_c_info(*(NV_CCTXT_P(X)),&myid,&nprocs);
-  /* set i-th element of data array */
-  irow[0] = myid*N_VGetLocalLength_PSBLAS(X) + i;
+  
   value[0] = val;
-  psb_c_dgeins(1,irow,value,NV_PVEC_P(X),NV_DESCRIPTOR_P(X));
-  N_VAsb_PSBLAS(X);
+  //fprintf(stderr,"PSBLAS set_element calling set_entry %d %lf\n",i,value[0]);
+  psb_c_dvect_set_entry(NV_PVEC_P(X),i,value[0]);
+  //(N_VGetArrayPointer_PSBLAS(X))[i] = val;  
+  //N_VAsb_PSBLAS(X);
 }
 
 sunrealtype get_element(N_Vector X, sunindextype i)
 {
+  double temp1, temp2;
+  //fprintf(stderr,"PSBLAS get_element calling get_entry \n");
   /* get i-th element of data array */
-  return (N_VGetArrayPointer_PSBLAS(X))[i];
+  //  temp1 = (N_VGetArrayPointer_PSBLAS(X))[i];
+  temp2 = psb_c_dvect_get_entry(NV_PVEC_P(X),i);
+  return(temp2);
+
 }
 
 double max_time(N_Vector X, double time)

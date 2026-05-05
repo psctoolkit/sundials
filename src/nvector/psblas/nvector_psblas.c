@@ -45,7 +45,7 @@ N_Vector_ID N_VGetVectorID_PSBLAS(N_Vector v)
  * Function to create a new parallel vector with empty data array
  */
 
-N_Vector N_VNewEmpty_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh)
+N_Vector N_VNewEmpty_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh, SUNContext sunctx)
 {
   N_Vector v;
   N_Vector_Ops ops;
@@ -54,7 +54,8 @@ N_Vector N_VNewEmpty_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh)
 
   /* Create vector */
   v = NULL;
-  v = (N_Vector) malloc(sizeof *v);
+  //v = (N_Vector) malloc(sizeof *v);
+  v = N_VNewEmpty(sunctx);
   if (v == NULL) return(NULL);
 
   /* Create vector operation structure */
@@ -120,6 +121,7 @@ N_Vector N_VNewEmpty_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh)
   /* Attach content and ops */
   v->content = content;
   v->ops     = ops;
+  v->sunctx  = sunctx;
 
   return(v);
 }
@@ -128,7 +130,7 @@ N_Vector N_VNewEmpty_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh)
  * Function to create a new parallel vector
  */
 
-N_Vector N_VNew_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh)
+N_Vector N_VNew_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh, SUNContext sunctx)
 {
   /*
   This function creates and allocates memory for a parallel vector
@@ -138,7 +140,7 @@ N_Vector N_VNew_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh)
   psb_c_dvector *pvec = NULL;
 
   v = NULL;
-  v = N_VNewEmpty_PSBLAS(cctxt, cdh);
+  v = N_VNewEmpty_PSBLAS(cctxt, cdh, sunctx);
   if (v == NULL) return(NULL);
 
   /* Define new PSBLAS Vector */
@@ -160,15 +162,19 @@ N_Vector N_VNew_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh)
  */
 
 N_Vector N_VMake_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh, psb_i_t m, psb_l_t *irow,
-                            double *val)
+			double *val, SUNContext sunctx)
 {
   N_Vector v;
   psb_i_t    local_length;
-
+  
   v = NULL;
-  v = N_VNewEmpty_PSBLAS(cctxt, cdh);
+#if 0  
+  v = N_VNewEmpty_PSBLAS(cctxt, cdh, sunctx);
+#else
+  v = N_VNew_PSBLAS(cctxt, cdh, sunctx);
+#endif
   if (v == NULL) return(NULL);
-
+  //fprintf(stderr,"VMake_PSBLAS calling dgeins\n");
   psb_c_dgeins(m,irow,val,NV_PVEC_P(v),cdh);
 
   return(v);
@@ -181,7 +187,8 @@ N_Vector N_VMake_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh, psb_i_t m, psb
 
 void N_VAsb_PSBLAS(N_Vector v)
 {
-    psb_c_dgeasb(NV_PVEC_P(v),NV_DESCRIPTOR_P(v));
+  //fprintf(stderr,"VAsb_PSBLAS calling dgeasb\n");
+  psb_c_dgeasb(NV_PVEC_P(v),NV_DESCRIPTOR_P(v));
 }
 
 /* ----------------------------------------------------------------
@@ -393,7 +400,7 @@ N_Vector N_VCloneEmpty_PSBLAS(N_Vector w)
   /* Attach content and ops */
   v->content = content;
   v->ops     = ops;
-
+  v->sunctx  = w->sunctx;
   return(v);
 }
 
@@ -408,6 +415,7 @@ N_Vector N_VClone_PSBLAS(N_Vector w)
 
   NV_OWN_DATA_P(v) = SUNTRUE;
   NV_PVEC_P(v)     = psb_c_new_dvector();
+
   info = psb_c_dgeall(NV_PVEC_P(v),NV_DESCRIPTOR_P(w));
 
   return(v);
@@ -488,14 +496,20 @@ void N_VConst_PSBLAS(sunrealtype c, N_Vector z)
   psb_l_t irow[1];
   double zt[1];
   zt[0]=c;
+#if 0
   ng = N_VGetLength_PSBLAS(z);
 
   for (glob_row=0; glob_row < ng; glob_row++) {
     irow[0]=glob_row;
     psb_c_dgeins(1,irow,zt,NV_PVEC_P(z) ,NV_DESCRIPTOR_P(z));
   }
-
   N_VAsb_PSBLAS(z);
+#else
+  //fprintf(stderr,"VConst_PSBLAS calling set_scal\n");
+  // Note: TO BE FIXED PROPERLY
+  N_VAsb_PSBLAS(z);
+  psb_c_dvect_set_scal(NV_PVEC_P(z),zt[0]);
+#endif
 
   return;
 }

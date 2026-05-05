@@ -38,7 +38,7 @@
 #include "psb_prec_cbind.h"
 #include "psb_linsolve_cbind.h"
 #include "amg_c_dprec.h"
-#include "amg_const.h"
+#include "amg_config.h"
 
 #undef I
 

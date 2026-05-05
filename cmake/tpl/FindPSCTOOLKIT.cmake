@@ -143,7 +143,7 @@ set(AMGCDEFINES "${FLAGS_MUMPS_LIB} ${FLAGS_SLU_LIB} ${FLAGS_SLUDIST_LIB} ${FLAG
 # Build the variables
 
 set(LINK_PSBLAS -L${AMG_DIR}/lib -lamg_cbind -lamg_prec
-    -L${PSCTOOLKIT_DIR}/lib -lpsb_cbind -lpsb_util -lpsb_linsolve -lpsb_prec -lpsb_base -lgfortran
+    -L${PSCTOOLKIT_DIR}/lib -lpsb_cbind -lpsb_util -lpsb_linsolve -lpsb_prec -lpsb_ext -lpsb_base -lgfortran
     -L/usr/lib/x86_64-linux-gnu/openmpi/lib -lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi -lstdc++ -lm)
     
 MESSAGE(STATUS "${LINK_PSBLAS} ------ libraries linked")
