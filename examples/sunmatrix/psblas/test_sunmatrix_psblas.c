@@ -26,6 +26,7 @@
 #include <sundials/sundials_math.h>
 
 #include "test_sunmatrix.h"
+#include <sundials/sundials_context.h>
 
 #include <mpi.h>
 
@@ -53,25 +54,29 @@ int main(int argc, char *argv[])
   N_Vector     x, y ;                    	 /* test vectors               */
   SUNMatrix    A, B, I;            				 /* test matrices              */
   int          print_timing, square;
-	psb_c_ctxt	*cctxt;											 /* PSBLAS Context             */
-	psb_i_t      ictxt;                      /* PSBLAS Integer Context     */
+  psb_c_ctxt	*cctxt;											 /* PSBLAS Context             */
+  psb_i_t      ictxt;                      /* PSBLAS Integer Context     */
   psb_i_t      nprocs, myid;               /* Number of procs, proc id   */
   psb_c_descriptor *cdh;                   /* PSBLAS Descriptor          */
   /* Auxiliary variabales */
   psb_i_t      info;              				/* FLAG value for PSBLAS     */
   MPI_Comm     comm;											/* MPI Comminicator */
-	psb_i_t nb,nlr,nl,idim;									/* Poisson problem variables */
-	psb_l_t i,ng, *vl, k;
+  psb_i_t nb,nlr,nl,idim;									/* Poisson problem variables */
+  psb_l_t i,ng, *vl, k;
+  
+  sunrealtype  tol=10*SUN_UNIT_ROUNDOFF;
+  SUNContext sunctx;
 
-	sunrealtype  tol=10*SUN_UNIT_ROUNDOFF;
 
   /* Get processor number and total number of processes */
-	cctxt = psb_c_new_ctxt();
-	psb_c_init(cctxt);
+  cctxt = psb_c_new_ctxt();
+  psb_c_init(cctxt);
   psb_c_info(*cctxt,&myid,&nprocs);
-	psb_c_get_i_ctxt(*(cctxt),&ictxt,&info);
+  psb_c_get_i_ctxt(*(cctxt),&ictxt,&info);
 
   comm = MPI_Comm_f2c(ictxt);
+  info = SUNContext_Create(comm,&sunctx);
+
   /* check input and set vector length */
   if (argc < 4){
     printf("ERROR: THREE (3) Input required: matrix rows, matrix cols, print timing \n");
@@ -94,130 +99,131 @@ int main(int argc, char *argv[])
   SetTiming(print_timing);
 
   square = (matrows == matcols) ? 1 : 0;
-	if(myid == 0){
-		printf("\nSparse matrix test: size %ld^3 by %ld^3\n\n",
-         	(long int) matrows, (long int) matcols);
-	}
+  if(myid == 0){
+    printf("\nSparse matrix test: size %ld^3 by %ld^3\n\n",
+	   (long int) matrows, (long int) matcols);
+  }
 
-	cdh = psb_c_new_descriptor();
-	psb_c_set_index_base(0);
-	idim = matrows;
-	/* Simple minded BLOCK data distribution */
-	ng = ((psb_l_t) idim)*idim*idim;
-	nb = (ng+nprocs-1)/nprocs;
-	nl = nb;
-	if ( (ng -myid*nb) < nl) nl = ng -myid*nb;
-	fprintf(stderr,"%d: Input data %d %ld %d %d\n",myid,idim,ng,nb, nl);
-	vl = malloc(nb*sizeof(psb_l_t));
-	if (vl == NULL) {
-	  fprintf(stderr,"On %d: malloc failure\n",myid);
-	  psb_c_abort(*cctxt);
-	}
-	i = ((psb_l_t)myid) * nb;
-	for (k=0; k<nl; k++)
-	  vl[k] = i+k;
+  cdh = psb_c_new_descriptor();
+  psb_c_set_index_base(0);
+  idim = matrows;
+  /* Simple minded BLOCK data distribution */
+  ng = ((psb_l_t) idim)*idim*idim;
+  ng = ((psb_l_t) idim);
+  nb = (ng+nprocs-1)/nprocs;
+  nl = nb;
+  if ( (ng -myid*nb) < nl) nl = ng -myid*nb;
+  fprintf(stderr,"%d: Input data %d %ld %d %d\n",myid,idim,ng,nb, nl);
+  vl = malloc(nb*sizeof(psb_l_t));
+  if (vl == NULL) {
+    fprintf(stderr,"On %d: malloc failure\n",myid);
+    psb_c_abort(*cctxt);
+  }
+  i = ((psb_l_t)myid) * nb;
+  for (k=0; k<nl; k++)
+    vl[k] = i+k;
 
-	info=psb_c_cdall_vl(nl,vl,*cctxt,cdh);
-	if (info != 0) {
-	  fprintf(stderr,"From cdall: %d\nBailing out\n",info);
-	  psb_c_abort(*cctxt);
-	}
-	if(myid == 0) printf("Descriptor for square problem allocated.\n");
+  info=psb_c_cdall_vl(nl,vl,*cctxt,cdh);
+  if (info != 0) {
+    fprintf(stderr,"From cdall: %d\nBailing out\n",info);
+    psb_c_abort(*cctxt);
+  }
+  if(myid == 0) printf("Descriptor for square problem allocated.\n");
   /* Initialize vectors and matrices to NULL */
   x = NULL;
   y = NULL;
   A = NULL;
-	B = NULL;
+  B = NULL;
   I = NULL;
-	/* Allocate the space for everything */
-	A = SUNPSBLASMatrix(cctxt, cdh);
-	if (A == NULL) {
-		if (myid == 0) printf("FAIL: Unable to create a new matrix \n\n");
-			psb_c_abort(*cctxt);
-			return(1);
-	}
-	B = SUNPSBLASMatrix(cctxt, cdh);
-	if (B == NULL) {
-		SUNMatDestroy_PSBLAS(A);
-		if (myid == 0) printf("FAIL: Unable to create a new matrix \n\n");
-			psb_c_abort(*cctxt);
-			return(1);
-	}
-	I = SUNPSBLASMatrix(cctxt, cdh);
-	if (I == NULL){
-		SUNMatDestroy_PSBLAS(A);
-		SUNMatDestroy_PSBLAS(B);
-		if (myid == 0) printf("FAIL: Unable to create a new matrix \n\n");
-			psb_c_abort(*cctxt);
-			return(1);
-	}
-	x = N_VNew_PSBLAS(cctxt, cdh);
-	if (x == NULL) {
-		SUNMatDestroy_PSBLAS(A);
-		SUNMatDestroy_PSBLAS(B);
-		SUNMatDestroy_PSBLAS(I);
-		if (myid == 0) printf("FAIL: Unable to create a new vector \n\n");
-			psb_c_abort(*cctxt);
-			return(1);
-	}
-	y = N_VNew_PSBLAS(cctxt, cdh);
-	if (y == NULL) {
-		SUNMatDestroy_PSBLAS(A);
-		SUNMatDestroy_PSBLAS(B);
-		SUNMatDestroy_PSBLAS(I);
-		N_VDestroy_PSBLAS(x);
-		if (myid == 0) printf("FAIL: Unable to create a new vector \n\n");
-			psb_c_abort(*cctxt);
-			return(1);
-	}
-	if (matgen(*cctxt, nl, idim, vl,A)!= 0) {
+  /* Allocate the space for everything */
+  A = SUNPSBLASMatrix(cctxt, cdh);
+  if (A == NULL) {
+    if (myid == 0) printf("FAIL: Unable to create a new matrix \n\n");
+    psb_c_abort(*cctxt);
+    return(1);
+  }
+  B = SUNPSBLASMatrix(cctxt, cdh);
+  if (B == NULL) {
+    SUNMatDestroy_PSBLAS(A);
+    if (myid == 0) printf("FAIL: Unable to create a new matrix \n\n");
+    psb_c_abort(*cctxt);
+    return(1);
+  }
+  I = SUNPSBLASMatrix(cctxt, cdh);
+  if (I == NULL){
+    SUNMatDestroy_PSBLAS(A);
+    SUNMatDestroy_PSBLAS(B);
+    if (myid == 0) printf("FAIL: Unable to create a new matrix \n\n");
+    psb_c_abort(*cctxt);
+    return(1);
+  }
+  x = N_VNew_PSBLAS(cctxt, cdh, sunctx);
+  if (x == NULL) {
+    SUNMatDestroy_PSBLAS(A);
+    SUNMatDestroy_PSBLAS(B);
+    SUNMatDestroy_PSBLAS(I);
+    if (myid == 0) printf("FAIL: Unable to create a new vector \n\n");
+    psb_c_abort(*cctxt);
+    return(1);
+  }
+  y = N_VNew_PSBLAS(cctxt, cdh, sunctx);
+  if (y == NULL) {
+    SUNMatDestroy_PSBLAS(A);
+    SUNMatDestroy_PSBLAS(B);
+    SUNMatDestroy_PSBLAS(I);
+    N_VDestroy_PSBLAS(x);
+    if (myid == 0) printf("FAIL: Unable to create a new vector \n\n");
+    psb_c_abort(*cctxt);
+    return(1);
+  }
+  if (matgen(*cctxt, nl, idim, vl,A)!= 0) {
     fprintf(stderr,"Error during matrix build loop for A\n");
     psb_c_abort(*cctxt);
-		return(1);
+    return(1);
   }
-	if(myid == 0) printf("Created the PSBLAS A matrix.\n");
-	if (eyegen(*cctxt, nl, idim, vl,I)!= 0) {
-		fprintf(stderr,"Error during matrix build loop for I\n");
-		psb_c_abort(*cctxt);
-		return(1);
-	}
-	if(myid == 0) printf("Created the PSBLAS I matrix.\n");
+  if(myid == 0) printf("Created the PSBLAS A matrix.\n");
+  if (eyegen(*cctxt, nl, idim, vl,I)!= 0) {
+    fprintf(stderr,"Error during matrix build loop for I\n");
+    psb_c_abort(*cctxt);
+    return(1);
+  }
+  if(myid == 0) printf("Created the PSBLAS I matrix.\n");
 
-	info=psb_c_cdasb(cdh);
-	if (info!=0)  return(info);
+  info=psb_c_cdasb(cdh);
+  if (info!=0)  return(info);
 
-	N_VConst_PSBLAS(1.0,x);
-	N_VConst_PSBLAS(1.0,y);
-	SUNMatAsb_PSBLAS(A);
-	SUNMatAsb_PSBLAS(B);
-	SUNMatAsb_PSBLAS(I);
+  N_VConst_PSBLAS(1.0,x);
+  N_VConst_PSBLAS(1.0,y);
+  SUNMatAsb_PSBLAS(A);
+  SUNMatAsb_PSBLAS(B);
+  SUNMatAsb_PSBLAS(I);
 
-	SUNMatCopy(I,B); // B = eye matrix
+  SUNMatCopy(I,B); // B = eye matrix
 
-	psb_c_barrier(*cctxt);
+  psb_c_barrier(*cctxt);
 
-	if(myid == 0) printf("All the PSBLAS objects have been populated.\n");
+  if(myid == 0) printf("All the PSBLAS objects have been populated.\n");
   /* SUNMatrix Tests */
   fails += Test_SUNMatGetID(A, SUNMATRIX_CUSTOM, myid);
-	fails += Test_SUNMatClone(A, myid);
+  fails += Test_SUNMatClone(A, myid);
   fails += Test_SUNMatCopy(A, myid);
   fails += Test_SUNMatZero(A, myid);
   fails += Test_SUNMatScaleAdd(A, I, myid);
   if (square) {
-  	fails += Test_SUNMatScaleAddI(A, I, myid);
+    fails += Test_SUNMatScaleAddI(A, I, myid);
   }
   fails += Test_SUNMatMatvec(B, x, y, myid);
   fails += Test_SUNMatSpace(A, myid);
 
-	/* Free vectors and matrices */
+  /* Free vectors and matrices */
   N_VDestroy_PSBLAS(x);
   N_VDestroy_PSBLAS(y);
   SUNMatDestroy_PSBLAS(A);
-	SUNMatDestroy_PSBLAS(B);
+  SUNMatDestroy_PSBLAS(B);
   SUNMatDestroy_PSBLAS(I);
 
-	psb_c_barrier(*cctxt);
-	/* Print result */
+  psb_c_barrier(*cctxt);
+  /* Print result */
   if (fails) {
     printf("FAIL: SUNMATRIX module failed %i tests, Proc %d \n\n", fails, myid);
   } else {
@@ -229,15 +235,15 @@ int main(int argc, char *argv[])
   (void) MPI_Allreduce(&fails, &globfails, 1, MPI_INT, MPI_MAX, comm);
 
 
-	if ((info=psb_c_cdfree(cdh))!=0) {
+  if ((info=psb_c_cdfree(cdh))!=0) {
     fprintf(stderr,"From cdfree: %d\nBailing out\n",info);
     psb_c_abort(*cctxt);
   }
 
-	free(cdh);
+  free(cdh);
 
-	psb_c_barrier(*cctxt);
-	if (myid == 0) fprintf(stderr,"Test program completed successfully\n");
+  psb_c_barrier(*cctxt);
+  if (myid == 0) fprintf(stderr,"Test program completed successfully\n");
   psb_c_exit(*cctxt);
 
   return(globfails);
@@ -248,15 +254,15 @@ int main(int argc, char *argv[])
  * --------------------------------------------------------------------*/
 psb_i_t check_matrix(SUNMatrix A, SUNMatrix B, sunrealtype tol)
 {
-	bool test;
+  bool test;
   sunindextype Annz;
   sunindextype Bnnz;
 
-	/* matrices should be in the ASSEMBLED state */
-	if(!psb_c_dis_matasb(SM_PMAT_P(A),SM_DESCRIPTOR_P(A)))
-		psb_c_dspasb(SM_PMAT_P(A),SM_DESCRIPTOR_P(A));
-	if(!psb_c_dis_matasb(SM_PMAT_P(B),SM_DESCRIPTOR_P(B)))
-		psb_c_dspasb(SM_PMAT_P(B),SM_DESCRIPTOR_P(B));
+  /* matrices should be in the ASSEMBLED state */
+  if(!psb_c_dis_matasb(SM_PMAT_P(A),SM_DESCRIPTOR_P(A)))
+    psb_c_dspasb(SM_PMAT_P(A),SM_DESCRIPTOR_P(A));
+  if(!psb_c_dis_matasb(SM_PMAT_P(B),SM_DESCRIPTOR_P(B)))
+    psb_c_dspasb(SM_PMAT_P(B),SM_DESCRIPTOR_P(B));
 
   /* matrices must have same shape and actual data */
   if (SUNMatGetID(A) != SUNMatGetID(B)) {
@@ -285,11 +291,11 @@ psb_i_t check_matrix(SUNMatrix A, SUNMatrix B, sunrealtype tol)
   /* compare matrix values */
   test = psb_c_dgecmpmat(SM_PMAT_P(A),SM_PMAT_P(B),tol,SM_DESCRIPTOR_P(A));
 
-	if(test){
-		return(0);
-	}else{
-		return(1);
-	}
+  if(test){
+    return(0);
+  }else{
+    return(1);
+  }
 
 }
 

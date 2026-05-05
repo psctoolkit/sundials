@@ -103,6 +103,7 @@ int main(int argc, char *argv[])
   char afmt[8];
   psb_i_t nparms;
   psb_i_t idim,istop,itmax,itrace,irst;
+  SUNContext sunctx;
 
   /* Get processor number and total number of processes */
   cctxt = psb_c_new_ctxt();
@@ -193,14 +194,14 @@ int main(int argc, char *argv[])
       psb_c_abort(*cctxt);
       return(1);
   }
-  x = N_VNew_PSBLAS(cctxt, cdh);
+  x = N_VNew_PSBLAS(cctxt, cdh, sunctx);
   if (x == NULL) {
     SUNMatDestroy_PSBLAS(A);
     if (myid == 0) printf("FAIL: Unable to create a new vector \n\n");
       psb_c_abort(*cctxt);
       return(1);
   }
-  b = N_VNew_PSBLAS(cctxt, cdh);
+  b = N_VNew_PSBLAS(cctxt, cdh, sunctx);
   if (b == NULL) {
     SUNMatDestroy(A);
     N_VDestroy(x);
@@ -208,7 +209,7 @@ int main(int argc, char *argv[])
       psb_c_abort(*cctxt);
       return(1);
   }
-  xhat = N_VNew_PSBLAS(cctxt,cdh);
+  xhat = N_VNew_PSBLAS(cctxt,cdh, sunctx);
 
   /* Populate the A matrix */
   if (matgen(*cctxt, nl, idim, vl,A)!= 0) {
