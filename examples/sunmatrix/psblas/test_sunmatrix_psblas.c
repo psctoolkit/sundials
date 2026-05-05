@@ -429,7 +429,7 @@ psb_i_t matgen(psb_c_ctxt cctxt, psb_i_t nl,
   info = 0;
   psb_c_info(cctxt,&iam,&np);
   mindim = ((mshr < mshc)? mshr:mshc);
-  deltah = (double) 1.0/(mindim+2);
+  deltah = (double) 1.0/(mindim+1);
   sqdeltah = deltah*deltah;
   deltah2  = 2.0* deltah;
   psb_c_set_index_base(0);
@@ -440,7 +440,7 @@ psb_i_t matgen(psb_c_ctxt cctxt, psb_i_t nl,
     iy = (glob_row-ix*mshc);
     x=(ix+1)*deltah;
     y=(iy+1)*deltah;
-    fprintf(stderr,"From matgen: %ld   %ld %ld   %lf %lf\n",glob_row,ix,iy,x,y);
+    //fprintf(stderr,"From matgen: %ld   %ld %ld   %lf %lf\n",glob_row,ix,iy,x,y);
     zt[0] = 0.0; /*  internal point: build discretization */
     /*  term depending on   (x-1,y)        */
     val[el] = -a1(x,y)/sqdeltah-b1(x,y)/deltah2;

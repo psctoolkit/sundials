@@ -34,14 +34,17 @@
 #define NBMAX       20
 
 /* prototypes for PSBLAS matrix generation */
-double  a1(double x, double y, double  z);
-double  a2(double x, double y, double  z);
-double  a3(double x, double y, double  z);
-double  b1(double x, double y, double  z);
-double  b2(double x, double y, double  z);
-double  b3(double x, double y, double  z);
-double 	g(double x, double y, double z);
-psb_i_t matgen(psb_c_ctxt cctxt, psb_i_t nl, psb_i_t idim, psb_l_t vl[],SUNMatrix A);
+double  a1(double x, double y);
+double  a2(double x, double y);
+double  a3(double x, double y);
+double  b1(double x, double y);
+double  b2(double x, double y);
+double  b3(double x, double y);
+double 	g(double x, double y);
+double 	c(double x, double y);
+psb_i_t matgen(psb_c_ctxt cctxt, psb_i_t nl, 
+	       psb_l_t mshr, psb_l_t mshc, psb_l_t vl[],SUNMatrix A);
+psb_l_t splitdim(psb_l_t dim);
 /*-------------------------------------------------
  * Routine to read input from file
  *------------------------------------------------*/
@@ -103,6 +106,7 @@ int main(int argc, char *argv[])
   char afmt[8];
   psb_i_t nparms;
   psb_i_t idim,istop,itmax,itrace,irst;
+  psb_l_t mshr, mshc;
   SUNContext sunctx;
 
   /* Get processor number and total number of processes */
@@ -212,7 +216,7 @@ int main(int argc, char *argv[])
   xhat = N_VNew_PSBLAS(cctxt,cdh, sunctx);
 
   /* Populate the A matrix */
-  if (matgen(*cctxt, nl, idim, vl,A)!= 0) {
+  if (matgen(*cctxt, nl, mshr, mshc, vl,A)!= 0) {
     fprintf(stderr,"Error during matrix build loop for A\n");
     psb_c_abort(*cctxt);
     return(1);
@@ -314,133 +318,125 @@ int check_vector(N_Vector X, N_Vector Y, sunrealtype tol)
 /*-------------------------------------------------
  * PSBLAS Auxiliary functions for matrix creation
  *------------------------------------------------*/
- double  a1(double x, double y, double  z)
+
+psb_l_t splitdim(psb_l_t dim)
+{
+  psb_l_t tmp;
+  tmp = ((psb_l_t) 1) + sqrt(((double)1.0)*dim);
+  for ( ; ((tmp > 1) && (dim%tmp != 0));  tmp--);  
+  return(tmp);	  
+}
+ double  a1(double x, double y)
  {
    return(1.0/80.0);
  }
- double a2(double x, double y, double  z)
+ double a2(double x, double y)
  {
    return(1.0/80.0);
  }
- double a3(double x, double y, double  z)
+ double a3(double x, double y)
  {
    return(1.0/80.0);
  }
- double  c(double x, double y, double  z)
+ double  c(double x, double y)
  {
    return(0.0);
  }
- double  b1(double x, double y, double  z)
+ double  b1(double x, double y)
  {
    return(0.0/sqrt(3.0));
  }
- double b2(double x, double y, double  z)
+ double b2(double x, double y)
  {
    return(0.0/sqrt(3.0));
  }
- double b3(double x, double y, double  z)
+ double b3(double x, double y)
  {
    return(0.0/sqrt(3.0));
  }
 
- double g(double x, double y, double z)
+ double g(double x, double y)
  {
    if (x == 1.0) {
      return(1.0);
    } else if (x == 0.0) {
-     return( exp(-y*y-z*z));
+     return( exp(-y*y));
    } else {
      return(0.0);
    }
  }
 
- psb_i_t matgen(psb_c_ctxt cctxt, psb_i_t nl, psb_i_t idim, psb_l_t vl[],SUNMatrix A)
- {
-   psb_i_t iam, np;
-   psb_l_t ix, iy, iz, el,glob_row;
-   psb_i_t i, k, info;
-   double x, y, z, deltah, sqdeltah, deltah2;
-   double val[10*NBMAX], zt[NBMAX];
-   psb_l_t irow[10*NBMAX], icol[10*NBMAX];
+psb_i_t matgen(psb_c_ctxt cctxt, psb_i_t nl, 
+	       psb_l_t mshr, psb_l_t mshc, psb_l_t vl[],SUNMatrix A)
+{
+  psb_i_t iam, np;
+  psb_l_t ix, iy, el, glob_row, mindim;
+  psb_i_t i, k, info;
+  double x, y, deltah, sqdeltah, deltah2;
+  double val[10*NBMAX], zt[NBMAX];
+  psb_l_t irow[10*NBMAX], icol[10*NBMAX];
 
-   info = 0;
-   psb_c_info(cctxt,&iam,&np);
-   deltah = (double) 1.0/(idim+1);
-   sqdeltah = deltah*deltah;
-   deltah2  = 2.0* deltah;
-   psb_c_set_index_base(0);
-   for (i=0; i<nl;  i++) {
-     glob_row=vl[i];
-     el=0;
-     ix = glob_row/(idim*idim);
-     iy = (glob_row-ix*idim*idim)/idim;
-     iz = glob_row-ix*idim*idim-iy*idim;
-     x=(ix+1)*deltah;
-     y=(iy+1)*deltah;
-     z=(iz+1)*deltah;
-     zt[0] = 0.0;
-     /*  internal point: build discretization */
-     /*  term depending on   (x-1,y,z)        */
-     val[el] = -a1(x,y,z)/sqdeltah-b1(x,y,z)/deltah2;
-     if (ix==0) {
-       zt[0] += g(0.0,y,z)*(-val[el]);
-     } else {
-       icol[el]=(ix-1)*idim*idim+(iy)*idim+(iz);
-       el=el+1;
-     }
-     /*  term depending on     (x,y-1,z) */
-     val[el]  = -a2(x,y,z)/sqdeltah-b2(x,y,z)/deltah2;
-     if (iy==0) {
-       zt[0] += g(x,0.0,z)*(-val[el]);
-     } else {
-       icol[el]=(ix)*idim*idim+(iy-1)*idim+(iz);
-       el=el+1;
-     }
-     /* term depending on     (x,y,z-1)*/
-     val[el]=-a3(x,y,z)/sqdeltah-b3(x,y,z)/deltah2;
-     if (iz==0) {
-       zt[0] += g(x,y,0.0)*(-val[el]);
-     } else {
-       icol[el]=(ix)*idim*idim+(iy)*idim+(iz-1);
-       el=el+1;
-     }
-     /* term depending on     (x,y,z)*/
-     val[el]=2.0*(a1(x,y,z)+a2(x,y,z)+a3(x,y,z))/sqdeltah + c(x,y,z);
-     icol[el]=(ix)*idim*idim+(iy)*idim+(iz);
-     el=el+1;
-     /*  term depending on     (x,y,z+1) */
-     val[el] = -a3(x,y,z)/sqdeltah+b3(x,y,z)/deltah2;
-     if (iz==idim-1) {
-       zt[0] += g(x,y,1.0)*(-val[el]);
-     } else {
-       icol[el]=(ix)*idim*idim+(iy)*idim+(iz+1);
-       el=el+1;
-     }
-     /* term depending on     (x,y+1,z) */
-     val[el] = -a2(x,y,z)/sqdeltah+b2(x,y,z)/deltah2;
-     if (iy==idim-1) {
-       zt[0] += g(x,1.0,z)*(-val[el]);
-     } else {
-       icol[el]=(ix)*idim*idim+(iy+1)*idim+(iz);
-       el=el+1;
-     }
-     /*  term depending on     (x+1,y,z) */
-     val[el] = -a1(x,y,z)/sqdeltah+b1(x,y,z)/deltah2;
-     if (ix==idim-1) {
-       zt[0] += g(1.0,y,z)*(-val[el]);
-     } else {
-       icol[el]=(ix+1)*idim*idim+(iy)*idim+(iz);
-       el=el+1;
-     }
-     for (k=0; k<el; k++) irow[k]=glob_row;
-     if ((info=psb_c_dspins(el,irow,icol,val,SM_PMAT_P(A),SM_DESCRIPTOR_P(A)))!=0)
-       fprintf(stderr,"From psb_c_dspins: %d\n",info);
-   }
+  info = 0;
+  psb_c_info(cctxt,&iam,&np);
+  mindim = ((mshr < mshc)? mshr:mshc);
+  deltah = (double) 1.0/(mindim+1);
+  sqdeltah = deltah*deltah;
+  deltah2  = 2.0* deltah;
+  psb_c_set_index_base(0);
+  for (i=0; i<nl;  i++) {
+    glob_row=vl[i];
+    el=0;
+    ix = glob_row/(mshc);
+    iy = (glob_row-ix*mshc);
+    x=(ix+1)*deltah;
+    y=(iy+1)*deltah;
+    //fprintf(stderr,"From matgen: %ld   %ld %ld   %lf %lf\n",glob_row,ix,iy,x,y);
+    zt[0] = 0.0; /*  internal point: build discretization */
+    /*  term depending on   (x-1,y)        */
+    val[el] = -a1(x,y)/sqdeltah-b1(x,y)/deltah2;
+    if (ix==0) {
+      zt[0] += g(0.0,y)*(-val[el]);
+    } else {
+      icol[el]=(ix-1)*mshc+(iy);
+      el=el+1;
+    }
+    /*  term depending on     (x,y-1) */
+    val[el]  = -a2(x,y)/sqdeltah-b2(x,y)/deltah2;
+    if (iy==0) {
+      zt[0] += g(x,0.0)*(-val[el]);
+    } else {
+      icol[el]=(ix)*mshc+(iy-1);
+      el=el+1;
+    }
+    /* term depending on     (x,y)*/
+    val[el]=2.0*(a1(x,y)+a2(x,y)+a3(x,y))/sqdeltah + c(x,y);
+    icol[el]=(ix)*mshc+(iy);
+    el=el+1;
+    /* term depending on     (x,y+1) */
+    val[el] = -a2(x,y)/sqdeltah+b2(x,y)/deltah2;
+    if (iy==mshr-1) {
+      zt[0] += g(x,1.0)*(-val[el]);
+    } else {
+      icol[el]=(ix)*mshc+(iy+1);
+      el=el+1;
+    }
+    /*  term depending on     (x+1,y) */
+    val[el] = -a1(x,y)/sqdeltah+b1(x,y)/deltah2;
+    if (ix==mshc-1) {
+      zt[0] += g(1.0,y)*(-val[el]);
+    } else {
+      icol[el]=(ix+1)*mshc+(iy);
+      el=el+1;
+    }
+    for (k=0; k<el; k++) irow[k]=glob_row;
+    if ((info=psb_c_dspins(el,irow,icol,val,SM_PMAT_P(A),SM_DESCRIPTOR_P(A)))!=0)
+      fprintf(stderr,"From psb_c_dspins: %d\n",info);
+  }
 
-   return(info);
+  return(info);
 
 
- }
+}
 
  void sync_device()
  {
