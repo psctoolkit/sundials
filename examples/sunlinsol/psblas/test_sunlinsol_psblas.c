@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
   cdh = psb_c_new_descriptor();
   psb_c_set_index_base(0);
   /* Simple minded BLOCK data distribution */
-  ng = ((psb_l_t) idim)*idim*idim;
+  //ng = ((psb_l_t) idim)*idim*idim;
   ng = ((psb_l_t) idim);
   mshr = splitdim(ng);
   mshc = ng/mshr;
