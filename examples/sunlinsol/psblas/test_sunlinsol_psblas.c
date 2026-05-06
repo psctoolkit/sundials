@@ -28,8 +28,9 @@
 #include <sunlinsol/sunlinsol_psblas.h>
 
 #include "test_sunlinsol.h"
-
 #include "mpi.h"
+
+#include <string.h>
 
 #define NBMAX       20
 
@@ -115,12 +116,14 @@ int main(int argc, char *argv[])
   psb_c_info(*cctxt,&myid,&nprocs);
   psb_c_get_i_ctxt(*(cctxt),&ictxt,&info);
   comm = MPI_Comm_f2c(ictxt);
+  info = SUNContext_Create(comm,&sunctx);
 
   /* Read input and decide test-problem */
   psb_c_barrier(*cctxt);
   if (myid == 0) {
+#if 0
     fout = fgets(buffer,LINEBUFSIZE,stdin);
-    sscanf(buffer,"%d ",&nparms);
+    sscanf(buffer,"%d",&nparms);
     fout = fgets(buffer,LINEBUFSIZE,stdin);
     sscanf(buffer,"%s",methd);
     fout = fgets(buffer,LINEBUFSIZE,stdin);
@@ -139,7 +142,23 @@ int main(int argc, char *argv[])
     sscanf(buffer,"%d",&irst);
     fout = fgets(buffer,LINEBUFSIZE,stdin);
     sscanf(buffer,"%le",&tol);
+#else
+    nl = atoi(argv[1]);
+    // Ignore argv[2]
+    irst = atoi(argv[3]);
+    tol = atof(argv[4]);
+    // Predefined
+    strcpy(methd,"CG");
+    strcpy(ptype,"ML");
+    strcpy(afmt,"CSR");
+    istop = 2;
+    itmax = 200;
+    itrace = -1;
+    //
+    idim = nl*nprocs;
+#endif
   }
+
   /* Now broadcast the values, and check they're OK */
   psb_c_ibcast(*cctxt,1,&nparms,0);
   psb_c_hbcast(*cctxt,methd,0);
@@ -158,7 +177,7 @@ int main(int argc, char *argv[])
     printf("**************************************************************\n");
     printf(" Read %d parameters.\n",nparms);
     printf(" Solving with method %s preconditioned by %s\n",methd,ptype);
-    printf(" A is stored in format %s of size %d^3 x %d^3\n",afmt,idim,idim);
+    printf(" A is stored in format %s of size %d x %d\n",afmt,idim,idim);
     printf(" Stopping criterion is %d over %d maxit (trace %d)\n",istop,itmax,itrace);
     printf(" irst = %d, tolerance = %e\n",irst,tol);
     printf("**************************************************************\n");
@@ -170,6 +189,9 @@ int main(int argc, char *argv[])
   psb_c_set_index_base(0);
   /* Simple minded BLOCK data distribution */
   ng = ((psb_l_t) idim)*idim*idim;
+  ng = ((psb_l_t) idim);
+  mshr = splitdim(ng);
+  mshc = ng/mshr;
   nb = (ng+nprocs-1)/nprocs;
   nl = nb;
   if ( (ng -myid*nb) < nl) nl = ng -myid*nb;
@@ -274,11 +296,11 @@ int main(int argc, char *argv[])
   /* check if any other process failed */
   (void) MPI_Allreduce(&passfail, &fails, 1, MPI_INT, MPI_MAX, comm);
 
-  // SUNLinSolFree(LS);
-  // SUNMatDestroy(A);
-  // N_VDestroy(xhat);
-  // N_VDestroy(x);
-  // N_VDestroy(b);
+  SUNLinSolFree(LS);
+  SUNMatDestroy(A);
+  N_VDestroy(xhat);
+  N_VDestroy(x);
+  N_VDestroy(b);
 
   /* Free solver and vectors */
   if ((info=psb_c_cdfree(cdh))!=0) {

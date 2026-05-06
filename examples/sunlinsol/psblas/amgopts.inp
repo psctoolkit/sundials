@@ -2,7 +2,7 @@
 CG                     Iterative method BICGSTAB CGS  BICG BICGSTABL RGMRES
 ML                     Preconditioner NONE  DIAG  BJAC ML
 CSR                    A Storage format CSR COO JAD
-20                     Domain size (acutal system is this**3)
+100                    matrix size
 1                      Stopping criterion
 80                     MAXIT
 01                     ITRACE

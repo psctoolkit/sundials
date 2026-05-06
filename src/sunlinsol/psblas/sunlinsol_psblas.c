@@ -223,6 +223,9 @@ int SUNLinSolSetup_PSBLAS(SUNLinearSolver S, SUNMatrix A){
   /* Print out information on the preconditioner */
   if(strcmp(LS_PTYPE_P(S),"ML") == 0) amg_c_ddescr(LS_MLPREC_P(S));
   if(iam==0) printf("\tBuilding phase of the preconditioner completed\n\n");
+  if (iam==0) psb_c_PrintSolverOptions(&(PSBLAS_CONTENT(S)->options));
+  if(iam==0) printf("\t                                              \n\n");
+
   return(SUN_SUCCESS);
 
 
@@ -241,7 +244,6 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
   N_VAsb_PSBLAS(x);
   /* Solve the linear system in PSBLAS, again we need to make a distinction
    * regarding the used preconditioner                                        */
-  psb_c_PrintSolverOptions(&(PSBLAS_CONTENT(S)->options));
   if( strcmp(LS_PTYPE_P(S),"NONE") == 0||
       strcmp(LS_PTYPE_P(S),"BJAC") == 0 ||
       strcmp(LS_PTYPE_P(S),"DIAG") == 0 ){
