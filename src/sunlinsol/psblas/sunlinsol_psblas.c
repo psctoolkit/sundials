@@ -156,6 +156,10 @@ int SUNLinSolInitialize_PSBLAS(SUNLinearSolver S){
         if(iam == 0) printf("Failure on AMG4PSBLAS precsetc %d ptype %s\n",ret,LS_PTYPE_P(S));
         return(SUNLS_PSET_FAIL_UNREC);
       }
+      ret = amg_c_dprecsetc(LS_MLPREC_P(S), "PAR_AGGR_ALG","COUPLED");
+      ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_TYPE","MATCHBOXP");
+      ret = amg_c_dprecseti(LS_MLPREC_P(S), "AGGR_SIZE",4);
+      ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_FILTER","FILTER");
       
   }
   if(iam==0) printf("The %s solver with %s preconditioner has been initialized\n",LS_METHD_P(S),LS_PTYPE_P(S));
@@ -182,9 +186,8 @@ int SUNLinSolSetup_PSBLAS(SUNLinearSolver S, SUNMatrix A){
     printf("Working with different parallel context: this will never work.\n");
     printf("\tContext Solver %d \n\tContext Matrix %d\n",ictxt1,ictxt2);
   }
-
   psb_c_info(*(LS_CCTXT_P(S)),&iam,&np);
-  if(iam==0) printf("\n\tI'm building the %s preconditioner ",LS_PTYPE_P(S));
+  if(iam==0) printf("\nSUNLinSolSetup_PSBLAS\n\tI'm building the %s preconditioner ",LS_PTYPE_P(S));
 
   if ( LS_BMAT_P(S) == NULL){
     if(iam==0) printf("on the same matrix of the system.\n");
@@ -223,9 +226,6 @@ int SUNLinSolSetup_PSBLAS(SUNLinearSolver S, SUNMatrix A){
   /* Print out information on the preconditioner */
   if(strcmp(LS_PTYPE_P(S),"ML") == 0) amg_c_ddescr(LS_MLPREC_P(S));
   if(iam==0) printf("\tBuilding phase of the preconditioner completed\n\n");
-  if (iam==0) psb_c_PrintSolverOptions(&(PSBLAS_CONTENT(S)->options));
-  if(iam==0) printf("\t                                              \n\n");
-
   return(SUN_SUCCESS);
 
 
@@ -244,6 +244,7 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
   N_VAsb_PSBLAS(x);
   /* Solve the linear system in PSBLAS, again we need to make a distinction
    * regarding the used preconditioner                                        */
+  psb_c_PrintSolverOptions((PSBLAS_CONTENT(S)->options));
   if( strcmp(LS_PTYPE_P(S),"NONE") == 0||
       strcmp(LS_PTYPE_P(S),"BJAC") == 0 ||
       strcmp(LS_PTYPE_P(S),"DIAG") == 0 ){
@@ -254,7 +255,7 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
                     NV_PVEC_P(b),
                     NV_PVEC_P(x),
                     LS_DESCRIPTOR_P(S),
-                    &(PSBLAS_CONTENT(S)->options));
+		    &(PSBLAS_CONTENT(S)->options));
     if(ret != 0) return(SUNLS_PACKAGE_FAIL_REC);
   }else if(strcmp(LS_PTYPE_P(S),"ML") == 0 ||
     strcmp(LS_PTYPE_P(S),"GS") == 0 ||

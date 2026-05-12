@@ -74,7 +74,7 @@ SUNMatrix SUNPSBLASMatrix(psb_c_ctxt *cctxt, psb_c_descriptor *cdh)
   ops->scaleaddi   = SUNMatScaleAddI_PSBLAS;
   ops->matvec      = SUNMatMatvec_PSBLAS;
   ops->space       = SUNMatSpace_PSBLAS;
-	ops->matvecsetup = NULL; // PSBLAS doesn't need seetup before matvec!
+  ops->matvecsetup = NULL; // PSBLAS doesn't need seetup before matvec!
 
   /* Create content */
   content = NULL;
@@ -295,7 +295,6 @@ int SUNMatSpace_PSBLAS(SUNMatrix A, long int *lenrw, long int *leniw){
  int SUNMatAsb_PSBLAS(SUNMatrix A){
    /* Assemble a PSBLAS sparse matrix */
   bool check;
-
   if( A == NULL){
     fprintf(stderr,"Error during matrix build loop for I\n");
     return(1);
