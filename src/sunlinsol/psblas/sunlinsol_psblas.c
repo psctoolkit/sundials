@@ -59,6 +59,7 @@ SUNLinearSolver SUNLinSol_PSBLAS(psb_c_SolverOptions options, char methd[], char
   ops->setatimes         = NULL;
   ops->setpreconditioner = NULL;
   ops->setscalingvectors = NULL;
+  ops->setzeroguess      = SUNLinSolSetZeroGuess_PSBLAS;
   ops->initialize        = SUNLinSolInitialize_PSBLAS;
   ops->setup             = SUNLinSolSetup_PSBLAS;
   ops->solve             = SUNLinSolSolve_PSBLAS;
@@ -352,6 +353,13 @@ int SUNLinSolSetc_PSBLAS(SUNLinearSolver S, const char *what, const char *val){
 int SUNLinSolSetr_PSBLAS(SUNLinearSolver S, const char *what, double val){
   if (S == NULL || LS_MLPREC_P(S) == NULL) return(-1);
   return(amg_c_dprecsetr(LS_MLPREC_P(S), what, val));
+}
+
+SUNErrCode SUNLinSolSetZeroGuess_PSBLAS(SUNLinearSolver S, sunbooleantype onff)
+{
+  /* set flag indicating a zero initial guess */
+  PSBLAS_CONTENT(S)->zeroguess = onff;
+  return SUN_SUCCESS;
 }
 
 
