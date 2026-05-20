@@ -106,6 +106,9 @@ N_Vector N_VNewEmpty_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh, SUNContext
   ops->nvwrmsnormmaskvectorarray      = NULL;
   ops->nvscaleaddmultivectorarray     = NULL;
   ops->nvlinearcombinationvectorarray = NULL;
+  /* print operation for debugging */
+  ops->nvprint     = N_VPrint_PSBLAS;
+  ops->nvprintfile = N_VPrintFile_PSBLAS;
 
   /* Create content */
   content = NULL;
@@ -303,7 +306,8 @@ void N_VPrintFile_PSBLAS(N_Vector x, FILE* outfile)
 
   N  = N_VGetLocalLength_PSBLAS(x);
   xd = psb_c_dvect_get_cpy(NV_PVEC_P(x));
-
+  fprintf(stderr,"N_VPrintFile_PSBLAS: %d  %p  %p\n",N, xd, outfile);
+  fprintf(outfile,"N_VPrintFile_PSBLAS: %d\n",N);
   for (i = 0; i < N; i++) {
 #if defined(SUNDIALS_EXTENDED_PRECISION)
     fprintf(outfile, "%1.16f\n", xd[i]);
@@ -385,6 +389,9 @@ N_Vector N_VCloneEmpty_PSBLAS(N_Vector w)
   ops->nvwrmsnormmaskvectorarray      = w->ops->nvwrmsnormmaskvectorarray;
   ops->nvscaleaddmultivectorarray     = w->ops->nvscaleaddmultivectorarray;
   ops->nvlinearcombinationvectorarray = w->ops->nvlinearcombinationvectorarray;
+  /* print operation for debugging */
+  ops->nvprint     = w->ops->nvprint     ;
+  ops->nvprintfile = w->ops->nvprintfile ;
 
   /* Create content */
   content = NULL;
