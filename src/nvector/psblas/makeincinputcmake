@@ -5,7 +5,7 @@ SET(PSBCDEFINES  )
 
 SET(PSBLDLIBS  -L/opt/openmpi/5.0.8/gnu/14.3.0/lib -Wl,-rpath -Wl,/opt/openmpi/5.0.8/gnu/14.3.0/lib -Wl,--enable-new-dtags -lmpi -lopenblas -lmetis -lstdc++)
 
-SET(PSBLAS_LIBS -lpsb_linsolve -lpsb_prec -lpsb_util -lpsb_base -L/data/sfilippo/NUMERICAL/PSBLAS/GitHub/PARFLOW/V390-1/install/psblas/lib -lpsb_cbind)
+SET(PSBLAS_LIBS -lpsb_linsolve -lpsb_prec -lpsb_util -lpsb_base -L/data/sfilippo/NUMERICAL/PSBLAS/GitHub/PARFLOW/parflow_psblas_20260518/psctoolkit/install/psblas/lib -lpsb_cbind)
 
 SET(PSBRSBLDLIBS )
 

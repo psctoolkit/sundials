@@ -306,7 +306,7 @@ void N_VPrintFile_PSBLAS(N_Vector x, FILE* outfile)
 
   N  = N_VGetLocalLength_PSBLAS(x);
   xd = psb_c_dvect_get_cpy(NV_PVEC_P(x));
-  fprintf(stderr,"N_VPrintFile_PSBLAS: %d  %p  %p\n",N, xd, outfile);
+  //fprintf(stderr,"N_VPrintFile_PSBLAS: %d  %p  %p\n",N, xd, outfile);
   fprintf(outfile,"N_VPrintFile_PSBLAS: %d\n",N);
   for (i = 0; i < N; i++) {
 #if defined(SUNDIALS_EXTENDED_PRECISION)

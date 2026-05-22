@@ -58,7 +58,7 @@ SUNLinearSolver SUNLinSol_PSBLAS(psb_c_SolverOptions options, char methd[], char
   ops->gettype           = SUNLinSolGetType_PSBLAS;
   ops->setatimes         = NULL;
   ops->setpreconditioner = NULL;
-  ops->setscalingvectors = NULL;
+  ops->setscalingvectors = SUNLinSolSetScalingVectors_PSBLAS;
   ops->setzeroguess      = SUNLinSolSetZeroGuess_PSBLAS;
   ops->initialize        = SUNLinSolInitialize_PSBLAS;
   ops->setup             = SUNLinSolSetup_PSBLAS;
@@ -243,6 +243,8 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
   PSBLAS_CONTENT(S)->options.irst = 10;
   N_VAsb_PSBLAS(b);
   N_VAsb_PSBLAS(x);
+  fprintf(stderr,"PSBLAS Scaling Vectors   %p   %p\n",
+	  PSBLAS_CONTENT(S)->s1,PSBLAS_CONTENT(S)->s2);
   /* Solve the linear system in PSBLAS, again we need to make a distinction
    * regarding the used preconditioner                                        */
   psb_c_PrintSolverOptions((PSBLAS_CONTENT(S)->options));
@@ -355,6 +357,15 @@ int SUNLinSolSetr_PSBLAS(SUNLinearSolver S, const char *what, double val){
   return(amg_c_dprecsetr(LS_MLPREC_P(S), what, val));
 }
 
+SUNErrCode SUNLinSolSetScalingVectors_PSBLAS(SUNLinearSolver S, N_Vector s1,
+                                            N_Vector s2)
+{
+  /* set N_Vector pointers to integrator-supplied scaling vectors,
+     and return with success */
+  PSBLAS_CONTENT(S)->s1 = s1;
+  PSBLAS_CONTENT(S)->s2 = s2;
+  return SUN_SUCCESS;
+}
 SUNErrCode SUNLinSolSetZeroGuess_PSBLAS(SUNLinearSolver S, sunbooleantype onff)
 {
   /* set flag indicating a zero initial guess */
