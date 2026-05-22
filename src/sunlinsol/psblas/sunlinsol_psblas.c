@@ -177,6 +177,11 @@ int SUNLinSolSetup_PSBLAS(SUNLinearSolver S, SUNMatrix A){
   if (S == NULL || A == NULL) return(SUN_ERR_ARG_CORRUPT);
   psb_c_info(*(LS_CCTXT_P(S)),&iam,&np);
 
+  // initialize solver options
+  psb_c_DefaultSolverOptions(&(PSBLAS_CONTENT(S)->options));
+  PSBLAS_CONTENT(S)->options.itrace = 1;
+  PSBLAS_CONTENT(S)->options.irst = 20;
+
   // Use the information contained in A to setup the field in S
   LS_DESCRIPTOR_P(S) = SM_DESCRIPTOR_P(A);
   LS_PMAT_P(S)       = SM_PMAT_P(A);
@@ -236,10 +241,9 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
                                             sunrealtype tol){
   psb_i_t ret;
 
-  psb_c_DefaultSolverOptions(&(PSBLAS_CONTENT(S)->options));
+  // only update tolerance 
   PSBLAS_CONTENT(S)->options.eps  = tol;
-  PSBLAS_CONTENT(S)->options.itrace = 1;
-  PSBLAS_CONTENT(S)->options.irst = 10;
+  
   N_VAsb_PSBLAS(b);
   N_VAsb_PSBLAS(x);
   /* Solve the linear system in PSBLAS, again we need to make a distinction
