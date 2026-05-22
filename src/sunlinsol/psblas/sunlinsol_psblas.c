@@ -124,7 +124,8 @@ int SUNLinSolInitialize_PSBLAS(SUNLinearSolver S){
 
   psb_c_info(*(LS_CCTXT_P(S)),&iam,&np);
 
-  if(iam==0) printf("I'm initializing the %s solver with %s preconditioner\n",LS_METHD_P(S),LS_PTYPE_P(S));
+  if(iam==0) printf("I'm initializing the %s solver with %s preconditioner\n",
+		    LS_METHD_P(S),LS_PTYPE_P(S));
 
   if(S == NULL) return(SUN_ERR_ARG_CORRUPT);
 
@@ -138,7 +139,8 @@ int SUNLinSolInitialize_PSBLAS(SUNLinearSolver S){
         LS_PREC_P(S) = psb_c_new_dprec();
         ret = psb_c_dprecinit(*(LS_CCTXT_P(S)),LS_PREC_P(S),LS_PTYPE_P(S));
         if(ret != 0){
-          if(iam == 0) printf("Failure on PSBLAS precinit %d ptype %s\n",ret,LS_PTYPE_P(S));
+          if(iam == 0) printf("Failure on PSBLAS precinit %d ptype %s\n",
+			      ret,LS_PTYPE_P(S));
           return(SUNLS_PSET_FAIL_UNREC);
         }
       }
@@ -149,12 +151,14 @@ int SUNLinSolInitialize_PSBLAS(SUNLinearSolver S){
       if(iam==0) printf("\tInit of a AMG4PSBLAS preconditioner\n");
       ret = amg_c_dprecinit(*(LS_CCTXT_P(S)), LS_MLPREC_P(S), LS_PTYPE_P(S));
       if(ret != 0){
-        if(iam == 0) printf("Failure on AMG4PSBLAS precinit %d ptype %s\n",ret,LS_PTYPE_P(S));
+        if(iam == 0) printf("Failure on AMG4PSBLAS precinit %d ptype %s\n",
+			    ret,LS_PTYPE_P(S));
         return(SUNLS_PSET_FAIL_UNREC);
       }
       ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_FILTER","FILTER");
       if(ret != 0){
-        if(iam == 0) printf("Failure on AMG4PSBLAS precsetc %d ptype %s\n",ret,LS_PTYPE_P(S));
+        if(iam == 0) printf("Failure on AMG4PSBLAS precsetc %d ptype %s\n",
+			    ret,LS_PTYPE_P(S));
         return(SUNLS_PSET_FAIL_UNREC);
       }
       ret = amg_c_dprecsetc(LS_MLPREC_P(S), "PAR_AGGR_ALG","COUPLED");
@@ -163,7 +167,8 @@ int SUNLinSolInitialize_PSBLAS(SUNLinearSolver S){
       ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_FILTER","FILTER");
       
   }
-  if(iam==0) printf("The %s solver with %s preconditioner has been initialized\n",LS_METHD_P(S),LS_PTYPE_P(S));
+  if(iam==0) printf("The %s solver with %s preconditioner has been initialized\n",
+		    LS_METHD_P(S),LS_PTYPE_P(S));
 
   return(SUN_SUCCESS);
 }
@@ -193,7 +198,8 @@ int SUNLinSolSetup_PSBLAS(SUNLinearSolver S, SUNMatrix A){
     printf("\tContext Solver %d \n\tContext Matrix %d\n",ictxt1,ictxt2);
   }
   psb_c_info(*(LS_CCTXT_P(S)),&iam,&np);
-  if(iam==0) printf("\nSUNLinSolSetup_PSBLAS\n\tI'm building the %s preconditioner ",LS_PTYPE_P(S));
+  if(iam==0) printf("\nSUNLinSolSetup_PSBLAS\n\tI'm building the %s preconditioner ",
+		    LS_PTYPE_P(S));
 
   if ( LS_BMAT_P(S) == NULL){
     if(iam==0) printf("on the same matrix of the system.\n");
@@ -291,7 +297,8 @@ int SUNLinSolFree_PSBLAS(SUNLinearSolver S){
   if (S == NULL) return(SUN_SUCCESS);
 
   psb_c_info(*(LS_CCTXT_P(S)),&iam,&np);
-  if(iam == 0) printf("\n\tI'm freeing the %s solver with %s preconditioner\n",LS_METHD_P(S),LS_PTYPE_P(S));
+  if(iam == 0) printf("\n\tI'm freeing the %s solver with %s preconditioner\n",
+		      LS_METHD_P(S),LS_PTYPE_P(S));
 
   /* delete the preconditioner item from within the content structure */
   if( strcmp(LS_PTYPE_P(S),"NONE") == 0 ||
