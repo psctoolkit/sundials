@@ -60,6 +60,9 @@ struct _SUNLinearSolverContent_PSBLAS {
   psb_c_ctxt *cctxt;           /* PSBLAS communicator                       */
   char methd[40];              /* String for Method and Preconditioner type */
   char ptype[20];
+  sunbooleantype zeroguess;
+  N_Vector s1;
+  N_Vector s2;
 };
 
 typedef struct _SUNLinearSolverContent_PSBLAS *SUNLinearSolverContent_PSBLAS;
@@ -105,11 +108,16 @@ SUNDIALS_EXPORT int SUNLinSolSeti_PSBLAS(SUNLinearSolver S, const char *what, ps
 SUNDIALS_EXPORT int SUNLinSolSetc_PSBLAS(SUNLinearSolver S, const char *what, const char *val);
 SUNDIALS_EXPORT int SUNLinSolSetr_PSBLAS(SUNLinearSolver S, const char *what, double val);
 SUNDIALS_EXPORT int SUNLinSolSetPreconditioner_PSBLAS(SUNLinearSolver S, SUNMatrix B);
+SUNDIALS_EXPORT int SUNLinSolSetScalingVectors_PSBLAS(SUNLinearSolver S, N_Vector s1,
+						      N_Vector s2);
 /* Get functions */
 SUNDIALS_EXPORT int SUNLinSolNumIters_PSBLAS(SUNLinearSolver S);
 SUNDIALS_EXPORT sunrealtype SUNLinSolResNorm_PSBLAS(SUNLinearSolver S);
 SUNDIALS_EXPORT long int SUNLinSolLastFlag_PSBLAS(SUNLinearSolver S);
 
+SUNDIALS_EXPORT SUNErrCode SUNLinSolSetZeroGuess_PSBLAS(SUNLinearSolver S,
+                                                       sunbooleantype onff);
+  
 #ifdef __cplusplus
 }
 #endif
