@@ -61,8 +61,8 @@ struct _SUNLinearSolverContent_PSBLAS {
   char methd[40];              /* String for Method and Preconditioner type */
   char ptype[20];
   sunbooleantype zeroguess;
-  N_Vector s1;
-  N_Vector s2;
+  psb_c_dvector *s1;
+  psb_c_dvector *s2;
 };
 
 typedef struct _SUNLinearSolverContent_PSBLAS *SUNLinearSolverContent_PSBLAS;
@@ -88,6 +88,9 @@ typedef struct _SUNLinearSolverContent_PSBLAS *SUNLinearSolverContent_PSBLAS;
 #define LS_METHD_P(S) ( PSBLAS_CONTENT(S)->methd )
 
 #define LS_PTYPE_P(S) ( PSBLAS_CONTENT(S)->ptype )
+
+#define LS_SCALE_S1(S) ( PSBLAS_CONTENT(S)->s1 )
+#define LS_SCALE_S2(S) ( PSBLAS_CONTENT(S)->s2 )
 
 
 /* ---------------------------------------

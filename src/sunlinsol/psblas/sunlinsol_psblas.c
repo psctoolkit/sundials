@@ -253,7 +253,7 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
   
   N_VAsb_PSBLAS(b);
   N_VAsb_PSBLAS(x);
-  //  fprintf(stderr,"PSBLAS Scaling Vectors   %p   %p\n",
+  //fprintf(stderr,"PSBLAS Scaling Vectors   %p   %p\n",
   //	  PSBLAS_CONTENT(S)->s1,PSBLAS_CONTENT(S)->s2);
   /* Solve the linear system in PSBLAS, again we need to make a distinction
    * regarding the used preconditioner                                        */
@@ -280,8 +280,8 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
 		      NV_PVEC_P(b),
 		      NV_PVEC_P(x),
 		      LS_DESCRIPTOR_P(S),
-		      NV_PVEC_P(PSBLAS_CONTENT(S)->s1),
-		      NV_PVEC_P(PSBLAS_CONTENT(S)->s2),
+		      LS_SCALE_S1(S),
+		      LS_SCALE_S2(S),
                     &(PSBLAS_CONTENT(S)->options));
     if(ret != 0) return(SUNLS_PACKAGE_FAIL_REC);
   }
@@ -375,8 +375,10 @@ SUNErrCode SUNLinSolSetScalingVectors_PSBLAS(SUNLinearSolver S, N_Vector s1,
 {
   /* set N_Vector pointers to integrator-supplied scaling vectors,
      and return with success */
-  PSBLAS_CONTENT(S)->s1 = s1;
-  PSBLAS_CONTENT(S)->s2 = s2;
+  fprintf(stderr,"SetScalingVectors_PSBLAS:   %p %p %p %p\n",
+	  s1,NV_PVEC_P(s1),s2,NV_PVEC_P(s2));
+  LS_SCALE_S1(S) = NV_PVEC_P(s1);
+  LS_SCALE_S2(S) = NV_PVEC_P(s2);
   return SUN_SUCCESS;
 }
 SUNErrCode SUNLinSolSetZeroGuess_PSBLAS(SUNLinearSolver S, sunbooleantype onff)

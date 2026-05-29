@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
   int             passfail=0;              /* overall pass/fail flag    */
   SUNLinearSolver LS;                      /* linear solver object      */
   SUNMatrix       A;                       /* left-hand side            */
-  N_Vector        x, xhat, b;              /* test vectors              */
+  N_Vector        x, xhat, b, s1, s2;      /* test vectors              */
   double          tol;                     /* tolerance for solution    */
   psb_c_SolverOptions options;             /* Solver options            */
   psb_c_ctxt  *cctxt;                      /* PSBLAS Context            */
@@ -237,6 +237,9 @@ int main(int argc, char *argv[])
   }
   xhat = N_VNew_PSBLAS(cctxt,cdh, sunctx);
 
+  s1 = N_VNew_PSBLAS(cctxt,cdh, sunctx);
+  s2 = N_VNew_PSBLAS(cctxt,cdh, sunctx);
+
   /* Populate the A matrix */
   if (matgen(*cctxt, nl, mshr, mshc, vl,A)!= 0) {
     fprintf(stderr,"Error during matrix build loop for A\n");
@@ -253,9 +256,13 @@ int main(int argc, char *argv[])
   }
 
   N_VConst_PSBLAS(1.0,xhat);
+  N_VConst_PSBLAS(1.0,s1);
+  N_VConst_PSBLAS(1.0,s2);
   SUNMatAsb_PSBLAS(A);
   N_VAsb_PSBLAS(b);
   N_VAsb_PSBLAS(x);
+  N_VAsb_PSBLAS(s1);
+  N_VAsb_PSBLAS(s2);
 
   /* Set up the solver options */
   psb_c_DefaultSolverOptions(&options);
@@ -279,6 +286,7 @@ int main(int argc, char *argv[])
 
   /* Test Routines */
   fails += Test_SUNLinSolGetType(LS, SUNLINEARSOLVER_MATRIX_ITERATIVE,myid);
+  fails += Test_SUNLinSolSetScalingVectors(LS, s1, s2, 0);
   fails += Test_SUNLinSolSetup(LS, A, myid);
   fails += Test_SUNLinSolSolve(LS, A, xhat, b, tol, SUNTRUE, myid);
   fails += Test_SUNLinSolLastFlag(LS, myid);
@@ -301,6 +309,8 @@ int main(int argc, char *argv[])
   N_VDestroy(xhat);
   N_VDestroy(x);
   N_VDestroy(b);
+  N_VDestroy(s1);
+  N_VDestroy(s2);
 
   /* Free solver and vectors */
   if ((info=psb_c_cdfree(cdh))!=0) {
