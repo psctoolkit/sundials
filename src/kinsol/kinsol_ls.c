@@ -1240,7 +1240,6 @@ int kinLsSolve(KINMem kin_mem, N_Vector xx, N_Vector bb, sunrealtype* sJpnorm,
   kinls_mem->new_uu = SUNTRUE;
 
   /* Call solver */
-
 #if DO_PRINT
   nlscalls++;
   fprintf(stderr,"Calling SUNLinSolSolve %d  %lf\n",nlscalls,tol);

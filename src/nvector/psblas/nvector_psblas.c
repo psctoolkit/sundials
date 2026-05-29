@@ -153,9 +153,13 @@ N_Vector N_VNew_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh, SUNContext sunc
 
   /* Attach data */
   NV_OWN_DATA_P(v) = SUNTRUE;
-  NV_PVEC_P(v)     = psb_c_new_dvector();
+  pvec  = psb_c_new_dvector();
+  NV_PVEC_P(v) = pvec;     
   psb_c_dgeall(NV_PVEC_P(v),cdh);
-
+  //fprintf(stderr," from VNew_PSBLAS:  %p %p\n",pvec,pvec->dvector);
+  //nr = psb_c_dvect_get_nrows(pvec);
+  //fprintf(stderr," from VNew_PSBLAS size:  %p %p %d\n",pvec,pvec->dvector,nr);
+  
   return(v);
 }
 
@@ -415,15 +419,19 @@ N_Vector N_VClone_PSBLAS(N_Vector w)
 {
   N_Vector v;
   psb_i_t info;
+  psb_c_dvector *pvec ;
 
   v = NULL;
   v = N_VCloneEmpty_PSBLAS(w);
   if (v == NULL) return(NULL);
 
   NV_OWN_DATA_P(v) = SUNTRUE;
-  NV_PVEC_P(v)     = psb_c_new_dvector();
+  pvec = psb_c_new_dvector();
+  NV_PVEC_P(v)     = pvec;
 
-  info = psb_c_dgeall(NV_PVEC_P(v),NV_DESCRIPTOR_P(w));
+  info = psb_c_dgeall(pvec,NV_DESCRIPTOR_P(w));
+  //  fprintf(stderr," from VClone_PSBLAS:  %p %p   %d %p\n",
+  //pvec,pvec->dvector,info,NV_DESCRIPTOR_P(w));
 
   return(v);
 }
@@ -474,7 +482,7 @@ sunrealtype *N_VGetArrayPointer_PSBLAS(N_Vector v)
 
 void N_VSetArrayPointer_PSBLAS(sunrealtype *v_data, N_Vector v)
 {
-  printf("Warning : N_VSetArrayPointer is a dummy function for N_Vector PSBLAS\n");
+  fprintf(stderr,"Warning : N_VSetArrayPointer is a dummy function for N_Vector PSBLAS\n");
 
   return;
 }
