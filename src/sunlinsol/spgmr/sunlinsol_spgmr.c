@@ -365,7 +365,7 @@ int SUNLinSolSolve_SPGMR(SUNLinearSolver S, SUNDIALS_MAYBE_UNUSED SUNMatrix A,
   sunrealtype* cv;
   N_Vector* Xv;
   int status;
-
+  
   /* Initialize some variables */
   l_plus_1 = 0;
   krydim   = 0;
@@ -395,7 +395,6 @@ int SUNLinSolSolve_SPGMR(SUNLinearSolver S, SUNDIALS_MAYBE_UNUSED SUNMatrix A,
   /* Initialize counters and convergence flag */
   *nli      = 0;
   converged = SUNFALSE;
-
   /* Set sunbooleantype flags for internal solver options */
   preOnLeft  = ((SPGMR_CONTENT(S)->pretype == SUN_PREC_LEFT) ||
                (SPGMR_CONTENT(S)->pretype == SUN_PREC_BOTH));
@@ -409,6 +408,8 @@ int SUNLinSolSolve_SPGMR(SUNLinearSolver S, SUNDIALS_MAYBE_UNUSED SUNMatrix A,
 
   /* If preconditioning, check if psolve has been set */
   SUNAssert(!(preOnLeft || preOnRight) || psolve, SUN_ERR_ARG_CORRUPT);
+  
+  //fprintf(stderr,"SPGMRSolve start   %d  %d  %p\n",preOnLeft,preOnRight,psolve);
 
   /* Set vtemp and V[0] to initial (unscaled) residual r_0 = b - A*x_0 */
   if (*zeroguess)
@@ -460,7 +461,7 @@ int SUNLinSolSolve_SPGMR(SUNLinearSolver S, SUNDIALS_MAYBE_UNUSED SUNMatrix A,
     N_VScale(ONE, vtemp, V[0]);
     SUNCheckLastErr();
   }
-
+  //fprintf(stderr," Start with V[0] %lg\n",SUNRsqrt(N_VDotProd(V[0], V[0])));
   /* Set r_norm = beta to L2 norm of V[0] = s1 P1_inv r_0, and
      return if small  */
   r_norm = N_VDotProd(V[0], V[0]);
@@ -520,7 +521,7 @@ int SUNLinSolSolve_SPGMR(SUNLinearSolver S, SUNDIALS_MAYBE_UNUSED SUNMatrix A,
         N_VScale(ONE, V[l], vtemp);
         SUNCheckLastErr();
       }
-
+      //fprintf(stderr," Inner loop V[%d] %lg\n",l,SUNRsqrt(N_VDotProd(vtemp, vtemp)));
       /*   Apply right preconditioner: vtemp = P2_inv s2_inv V[l] */
       if (preOnRight)
       {
@@ -575,7 +576,7 @@ int SUNLinSolSolve_SPGMR(SUNLinearSolver S, SUNDIALS_MAYBE_UNUSED SUNMatrix A,
         N_VScale(ONE, vtemp, V[l_plus_1]);
         SUNCheckLastErr();
       }
-
+      //fprintf(stderr," Inner loop V[%d] left scaled %lg\n",l_plus_1,SUNRsqrt(N_VDotProd(V[l_plus_1], V[l_plus_1])));
       /*  Orthogonalize V[l+1] against previous V[i]: V[l+1] = w_tilde */
       if (gstype == SUN_CLASSICAL_GS)
       {
@@ -604,7 +605,7 @@ int SUNLinSolSolve_SPGMR(SUNLinearSolver S, SUNDIALS_MAYBE_UNUSED SUNMatrix A,
                          "SUNLinSolSolve_SPGMR", "iterate-residual",
                          "nli = %li, resnorm = %.16g", (long int)*nli, *res_norm);
 #endif
-
+      //fprintf(stderr," Convergence check %lg  %lg\n",rho, delta);
       if (rho <= delta)
       {
         converged = SUNTRUE;

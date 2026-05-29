@@ -1203,6 +1203,12 @@ int kinLsSetup(KINMem kin_mem)
   kinLsSolve interfaces between KINSOL and the generic
   SUNLinearSolver object
   ------------------------------------------------------------------*/
+//#define XPRINT 
+#ifdef  XPRINT
+static int nlscalls=0;
+char filename[1025];
+FILE *fout=NULL;
+#endif
 int kinLsSolve(KINMem kin_mem, N_Vector xx, N_Vector bb, sunrealtype* sJpnorm,
                sunrealtype* sFdotJp)
 {
@@ -1235,8 +1241,29 @@ int kinLsSolve(KINMem kin_mem, N_Vector xx, N_Vector bb, sunrealtype* sJpnorm,
   kinls_mem->new_uu = SUNTRUE;
 
   /* Call solver */
+#ifdef  XPRINT
+  nlscalls++;
+  fprintf(stderr,"Calling SUNLinSolSolve %d  %lf\n",nlscalls,tol);
+  if (nlscalls>=1) {
+    sprintf(filename,"RHS-%05d\.mtx\0",nlscalls);
+    fout=fopen(filename,"w");
+    N_VPrintFile(bb, fout);
+    fclose(fout);
+    sprintf(filename,"XINP-%05d\.mtx\0",nlscalls);
+    fout=fopen(filename,"w");
+    N_VPrintFile(xx, fout);
+    fclose(fout);
+  }
+#endif
   retval = SUNLinSolSolve(kinls_mem->LS, kinls_mem->J, xx, bb, tol);
-
+#ifdef  XPRINT
+  if (nlscalls>=1) {
+    sprintf(filename,"XOUT-%05d\.mtx\0",nlscalls);
+    fout=fopen(filename,"w");
+    N_VPrintFile(xx, fout);
+    fclose(fout);
+  }
+#endif
   /* Retrieve solver statistics */
   res_norm = ZERO;
   if (kinls_mem->LS->ops->resnorm)
