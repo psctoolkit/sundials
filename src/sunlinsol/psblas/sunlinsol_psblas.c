@@ -185,7 +185,7 @@ int SUNLinSolSetup_PSBLAS(SUNLinearSolver S, SUNMatrix A){
 
   // initialize solver options
   psb_c_DefaultSolverOptions(&(PSBLAS_CONTENT(S)->options));
-  PSBLAS_CONTENT(S)->options.itrace = 1;
+  PSBLAS_CONTENT(S)->options.itrace = 3;
   PSBLAS_CONTENT(S)->options.irst = 20;
 
   // Use the information contained in A to setup the field in S
@@ -253,8 +253,8 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
   
   N_VAsb_PSBLAS(b);
   N_VAsb_PSBLAS(x);
-  fprintf(stderr,"PSBLAS Scaling Vectors   %p   %p\n",
-	  PSBLAS_CONTENT(S)->s1,PSBLAS_CONTENT(S)->s2);
+  //  fprintf(stderr,"PSBLAS Scaling Vectors   %p   %p\n",
+  //	  PSBLAS_CONTENT(S)->s1,PSBLAS_CONTENT(S)->s2);
   /* Solve the linear system in PSBLAS, again we need to make a distinction
    * regarding the used preconditioner                                        */
   psb_c_PrintSolverOptions((PSBLAS_CONTENT(S)->options));
@@ -275,11 +275,13 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
     strcmp(LS_PTYPE_P(S),"AS") == 0 ||
     strcmp(LS_PTYPE_P(S),"FBGS") == 0 ){
     ret=amg_c_dkrylov(LS_METHD_P(S),
-                    LS_PMAT_P(S),
-                    LS_MLPREC_P(S),
-                    NV_PVEC_P(b),
-                    NV_PVEC_P(x),
-                    LS_DESCRIPTOR_P(S),
+		      LS_PMAT_P(S),
+		      LS_MLPREC_P(S),
+		      NV_PVEC_P(b),
+		      NV_PVEC_P(x),
+		      LS_DESCRIPTOR_P(S),
+		      NV_PVEC_P(PSBLAS_CONTENT(S)->s1),
+		      NV_PVEC_P(PSBLAS_CONTENT(S)->s2),
                     &(PSBLAS_CONTENT(S)->options));
     if(ret != 0) return(SUNLS_PACKAGE_FAIL_REC);
   }
