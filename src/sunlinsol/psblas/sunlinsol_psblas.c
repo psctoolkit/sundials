@@ -185,8 +185,9 @@ int SUNLinSolSetup_PSBLAS(SUNLinearSolver S, SUNMatrix A){
 
   // initialize solver options
   psb_c_DefaultSolverOptions(&(PSBLAS_CONTENT(S)->options));
-  PSBLAS_CONTENT(S)->options.itrace = 3;
-  PSBLAS_CONTENT(S)->options.irst = 20;
+  PSBLAS_CONTENT(S)->options.istop  = 2;
+  PSBLAS_CONTENT(S)->options.itrace = 1;
+  PSBLAS_CONTENT(S)->options.irst   = 20;
 
   // Use the information contained in A to setup the field in S
   LS_DESCRIPTOR_P(S) = SM_DESCRIPTOR_P(A);

@@ -1203,7 +1203,7 @@ int kinLsSetup(KINMem kin_mem)
   kinLsSolve interfaces between KINSOL and the generic
   SUNLinearSolver object
   ------------------------------------------------------------------*/
-#define DO_PRINT 0 
+#define DO_PRINT 0
 static int nlscalls=0;
 char filename[1025];
 FILE *fout=NULL;
