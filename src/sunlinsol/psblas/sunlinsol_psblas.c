@@ -185,7 +185,7 @@ int SUNLinSolSetup_PSBLAS(SUNLinearSolver S, SUNMatrix A){
 
   // initialize solver options
   psb_c_DefaultSolverOptions(&(PSBLAS_CONTENT(S)->options));
-  PSBLAS_CONTENT(S)->options.istop  = 2;
+  PSBLAS_CONTENT(S)->options.istop  = 3;
   PSBLAS_CONTENT(S)->options.itrace = 1;
   PSBLAS_CONTENT(S)->options.irst   = 20;
 

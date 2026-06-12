@@ -323,6 +323,7 @@ int SUNMatSpace_PSBLAS(SUNMatrix A, long int *lenrw, long int *leniw){
    check = psb_c_dis_matasb(SM_PMAT_P(A),SM_DESCRIPTOR_P(A));
    /* If the matrix was already in ASSEMBLED state, it puts into UPDATE */
    if(check){
+     psb_c_dsprn(SM_PMAT_P(A),SM_DESCRIPTOR_P(A),true);
      psb_c_dset_matupd(SM_PMAT_P(A),SM_DESCRIPTOR_P(A));
    }
 
