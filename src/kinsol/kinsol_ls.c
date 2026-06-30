@@ -1213,7 +1213,10 @@ int kinLsSolve(KINMem kin_mem, N_Vector xx, N_Vector bb, sunrealtype* sJpnorm,
 {
   KINLsMem kinls_mem;
   int nli_inc, retval;
-  sunrealtype res_norm, tol;
+  sunrealtype res_norm, tol, test_norm;
+
+  test_norm = N_VL1Norm((bb));
+  //fprintf(stderr,"kinLsSolve start bb: %16.24lf\n",test_norm);
 
   /* Access KINLsMem structure */
   if (kin_mem->kin_lmem == NULL)
@@ -1254,6 +1257,8 @@ int kinLsSolve(KINMem kin_mem, N_Vector xx, N_Vector bb, sunrealtype* sJpnorm,
     fclose(fout);
   }
 #endif
+  test_norm = N_VL1Norm((bb));
+  //fprintf(stderr,"kinLsSolve calling SUNLinSolSolve bb: %16.24lf\n",test_norm);
   retval = SUNLinSolSolve(kinls_mem->LS, kinls_mem->J, xx, bb, tol);
 #if DO_PRINT
   if (nlscalls>=1) {

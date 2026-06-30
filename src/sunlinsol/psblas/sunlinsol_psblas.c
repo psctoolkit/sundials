@@ -155,17 +155,18 @@ int SUNLinSolInitialize_PSBLAS(SUNLinearSolver S){
 			    ret,LS_PTYPE_P(S));
         return(SUNLS_PSET_FAIL_UNREC);
       }
+#if 0
       ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_FILTER","FILTER");
       if(ret != 0){
         if(iam == 0) printf("Failure on AMG4PSBLAS precsetc %d ptype %s\n",
 			    ret,LS_PTYPE_P(S));
         return(SUNLS_PSET_FAIL_UNREC);
       }
-      ret = amg_c_dprecsetc(LS_MLPREC_P(S), "PAR_AGGR_ALG","COUPLED");
-      ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_TYPE","MATCHBOXP");
-      ret = amg_c_dprecseti(LS_MLPREC_P(S), "AGGR_SIZE",4);
-      ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_FILTER","FILTER");
-      
+      //ret = amg_c_dprecsetc(LS_MLPREC_P(S), "PAR_AGGR_ALG","COUPLED");
+      //ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_TYPE","MATCHBOXP");
+      //ret = amg_c_dprecseti(LS_MLPREC_P(S), "AGGR_SIZE",4);
+      //ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_FILTER","FILTER");
+#endif      
   }
   if(iam==0) printf("The %s solver with %s preconditioner has been initialized\n",
 		    LS_METHD_P(S),LS_PTYPE_P(S));
@@ -245,20 +246,25 @@ int SUNLinSolSetup_PSBLAS(SUNLinearSolver S, SUNMatrix A){
 }
 
 int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
-                                            N_Vector x, N_Vector b,
-                                            sunrealtype tol){
+			  N_Vector x, N_Vector b,
+			  sunrealtype tol){
   psb_i_t ret;
+  sunrealtype xo_norm;
 
   // only update tolerance 
   PSBLAS_CONTENT(S)->options.eps  = tol;
+  xo_norm = N_VL1Norm((b));
+  //fprintf(stderr,"Entry to SUNLinSolSolve B: %16.24lf\n",xo_norm);
   
   N_VAsb_PSBLAS(b);
   N_VAsb_PSBLAS(x);
+  xo_norm = N_VL1Norm((b));
+  //fprintf(stderr,"Into from PSCT Krylov B: %16.24lf\n",xo_norm);
   //fprintf(stderr,"PSBLAS Scaling Vectors   %p   %p\n",
   //	  PSBLAS_CONTENT(S)->s1,PSBLAS_CONTENT(S)->s2);
   /* Solve the linear system in PSBLAS, again we need to make a distinction
    * regarding the used preconditioner                                        */
-  psb_c_PrintSolverOptions((PSBLAS_CONTENT(S)->options));
+  //psb_c_PrintSolverOptions((PSBLAS_CONTENT(S)->options));
   if( strcmp(LS_PTYPE_P(S),"NONE") == 0||
       strcmp(LS_PTYPE_P(S),"BJAC") == 0 ||
       strcmp(LS_PTYPE_P(S),"DIAG") == 0 ){
@@ -286,7 +292,8 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
                     &(PSBLAS_CONTENT(S)->options));
     if(ret != 0) return(SUNLS_PACKAGE_FAIL_REC);
   }
-
+  xo_norm = N_VL1Norm((x));
+  //fprintf(stderr,"Out from PSCT Krylov: %16.24lf\n",xo_norm);
   return(SUN_SUCCESS);
 }
 
@@ -376,8 +383,8 @@ SUNErrCode SUNLinSolSetScalingVectors_PSBLAS(SUNLinearSolver S, N_Vector s1,
 {
   /* set N_Vector pointers to integrator-supplied scaling vectors,
      and return with success */
-  fprintf(stderr,"SetScalingVectors_PSBLAS:   %p %p %p %p\n",
-	  s1,NV_PVEC_P(s1),s2,NV_PVEC_P(s2));
+  //fprintf(stderr,"SetScalingVectors_PSBLAS:   %p %p %p %p\n",
+  //s1,NV_PVEC_P(s1),s2,NV_PVEC_P(s2));
   LS_SCALE_S1(S) = NV_PVEC_P(s1);
   LS_SCALE_S2(S) = NV_PVEC_P(s2);
   return SUN_SUCCESS;
