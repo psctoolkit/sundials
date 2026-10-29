@@ -94,7 +94,7 @@ typedef struct _N_VectorContent_PSBLAS *N_VectorContent_PSBLAS;
 SUNDIALS_EXPORT N_Vector N_VNewEmpty_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh, SUNContext sunctx);
 
 SUNDIALS_EXPORT N_Vector N_VMake_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh,
-  psb_i_t m, psb_l_t *irow,double *val, SUNContext sunctx);
+  psb_c_i_t m, psb_c_l_t *irow,double *val, SUNContext sunctx);
 
 SUNDIALS_EXPORT void N_VAsb_PSBLAS(N_Vector v);
 

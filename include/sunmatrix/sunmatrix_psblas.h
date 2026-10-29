@@ -95,8 +95,9 @@ SUNDIALS_EXPORT int SUNMatSpace_PSBLAS(SUNMatrix A, long int *lenrw, long int *l
  * Auxiliary Functions for SUNMATRIX_PSBLAS
  * ---------------------------------------- */
 SUNDIALS_EXPORT int SUNMatAsb_PSBLAS(SUNMatrix A);
-SUNDIALS_EXPORT int SUNMatIns_PSBLAS(psb_i_t nz, const psb_l_t *irw, const psb_l_t *icl,
- 			const psb_d_t *val,SUNMatrix A);
+SUNDIALS_EXPORT int SUNMatIns_PSBLAS(psb_c_i_t nz, const psb_c_l_t *irw,
+				     const psb_c_l_t *icl,
+				     const psb_c_d_t *val,SUNMatrix A);
 
 #ifdef __cplusplus
 }

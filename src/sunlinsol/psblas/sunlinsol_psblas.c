@@ -58,7 +58,8 @@ SUNLinearSolver SUNLinSol_PSBLAS(psb_c_SolverOptions options, char methd[], char
   ops->gettype           = SUNLinSolGetType_PSBLAS;
   ops->setatimes         = NULL;
   ops->setpreconditioner = NULL;
-  ops->setscalingvectors = NULL;
+  ops->setscalingvectors = SUNLinSolSetScalingVectors_PSBLAS;
+  ops->setzeroguess      = SUNLinSolSetZeroGuess_PSBLAS;
   ops->initialize        = SUNLinSolInitialize_PSBLAS;
   ops->setup             = SUNLinSolSetup_PSBLAS;
   ops->solve             = SUNLinSolSolve_PSBLAS;
@@ -118,8 +119,8 @@ SUNLinearSolver_Type SUNLinSolGetType_PSBLAS(SUNLinearSolver S)
 
 int SUNLinSolInitialize_PSBLAS(SUNLinearSolver S){
 
-  psb_i_t ret;
-  psb_i_t iam,np;
+  psb_c_i_t ret;
+  psb_c_i_t iam,np;
 
   psb_c_info(*(LS_CCTXT_P(S)),&iam,&np);
 
@@ -145,20 +146,45 @@ int SUNLinSolInitialize_PSBLAS(SUNLinearSolver S){
     strcmp(LS_PTYPE_P(S),"GS") == 0 ||
     strcmp(LS_PTYPE_P(S),"AS") == 0 ||
     strcmp(LS_PTYPE_P(S),"FBGS") == 0 ){
-      if(iam==0) printf("\tInit of a AMG4PSBLAS preconditioner\n");
-      ret = amg_c_dprecinit(*(LS_CCTXT_P(S)), LS_MLPREC_P(S), LS_PTYPE_P(S));
-      if(ret != 0){
-        if(iam == 0) printf("Failure on AMG4PSBLAS precinit %d ptype %s\n",ret,LS_PTYPE_P(S));
-        return(SUNLS_PSET_FAIL_UNREC);
-      }
-      ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_FILTER","FILTER");
-      if(ret != 0){
-        if(iam == 0) printf("Failure on AMG4PSBLAS precsetc %d ptype %s\n",ret,LS_PTYPE_P(S));
-        return(SUNLS_PSET_FAIL_UNREC);
-      }
-      
+    if(iam==0) printf("\tInit of a AMG4PSBLAS preconditioner\n");
+    ret = amg_c_dprecinit(*(LS_CCTXT_P(S)), LS_MLPREC_P(S), LS_PTYPE_P(S));
+    if(ret != 0){
+      if(iam == 0) printf("Failure on AMG4PSBLAS precinit %d ptype %s\n",
+			  ret,LS_PTYPE_P(S));
+      return(SUNLS_PSET_FAIL_UNREC);
+    }
+    ret = amg_c_dprecsetc(LS_MLPREC_P(S), "ML_CYCLE","VCYCLE");
+    ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_FILTER","FILTER");
+    ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_ORD","NATURAL");
+    ret = amg_c_dprecseti(LS_MLPREC_P(S), "MIN_COARSE_SIZE_PER_PROCESS", 200);
+    ret = amg_c_dprecsetr(LS_MLPREC_P(S), "MIN_CR_RATIO", 4.0);
+    ret = amg_c_dprecsetc(LS_MLPREC_P(S), "SMOOTHER_TYPE", "FBGS");
+    ret = amg_c_dprecseti(LS_MLPREC_P(S), "SMOOTHER_SWEEPS", 1);
+    ret = amg_c_dprecsetc(LS_MLPREC_P(S), "COARSE_MAT", "DIST");
+    ret = amg_c_dprecsetc(LS_MLPREC_P(S), "COARSE_SOLVE","KRM");
+    ret = amg_c_dprecsetc(LS_MLPREC_P(S), "KRM_METHOD", "CG");
+    ret = amg_c_dprecsetc(LS_MLPREC_P(S), "KRM_KPREC", "BJAC");
+    ret = amg_c_dprecsetc(LS_MLPREC_P(S), "KRM_SUBSOLVE", "ILU");
+    ret = amg_c_dprecseti(LS_MLPREC_P(S), "KRM_FILLIN", 1);
+    ret = amg_c_dprecsetr(LS_MLPREC_P(S), "KRM_EPS", 1.0e-4);
+    ret = amg_c_dprecseti(LS_MLPREC_P(S), "KRM_ITMAX", 30);
+    ret = amg_c_dprecsetc(LS_MLPREC_P(S), "PAR_AGGR_ALG","COUPLED");
+    ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_TYPE","MATCHBOXP");
+    ret = amg_c_dprecseti(LS_MLPREC_P(S), "AGGR_SIZE",8);
+#if 0
+    if(ret != 0){
+      if(iam == 0) printf("Failure on AMG4PSBLAS precsetc %d ptype %s\n",
+			  ret,LS_PTYPE_P(S));
+      return(SUNLS_PSET_FAIL_UNREC);
+    }
+    //ret = amg_c_dprecsetc(LS_MLPREC_P(S), "PAR_AGGR_ALG","COUPLED");
+    //ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_TYPE","MATCHBOXP");
+    //ret = amg_c_dprecseti(LS_MLPREC_P(S), "AGGR_SIZE",4);
+    //ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_FILTER","FILTER");
+#endif      
   }
-  if(iam==0) printf("The %s solver with %s preconditioner has been initialized\n",LS_METHD_P(S),LS_PTYPE_P(S));
+  if(iam==0) printf("The %s solver with %s preconditioner has been initialized\n",
+		    LS_METHD_P(S),LS_PTYPE_P(S));
 
   return(SUN_SUCCESS);
 }
@@ -166,12 +192,18 @@ int SUNLinSolInitialize_PSBLAS(SUNLinearSolver S){
 int SUNLinSolSetup_PSBLAS(SUNLinearSolver S, SUNMatrix A){
   /* In this function we perform all the initialization for the solver and for
   the preconditioner. */
-  psb_i_t ret;
-  psb_i_t iam,np;
-  psb_i_t ictxt1, ictxt2;
+  psb_c_i_t ret;
+  psb_c_i_t iam,np;
+  psb_c_i_t ictxt1, ictxt2;
 
   if (S == NULL || A == NULL) return(SUN_ERR_ARG_CORRUPT);
   psb_c_info(*(LS_CCTXT_P(S)),&iam,&np);
+
+  // initialize solver options
+  psb_c_DefaultSolverOptions(&(PSBLAS_CONTENT(S)->options));
+  PSBLAS_CONTENT(S)->options.istop  = 2;
+  PSBLAS_CONTENT(S)->options.itrace = -1;
+  PSBLAS_CONTENT(S)->options.irst   = 20;
 
   // Use the information contained in A to setup the field in S
   LS_DESCRIPTOR_P(S) = SM_DESCRIPTOR_P(A);
@@ -184,7 +216,8 @@ int SUNLinSolSetup_PSBLAS(SUNLinearSolver S, SUNMatrix A){
   }
 
   psb_c_info(*(LS_CCTXT_P(S)),&iam,&np);
-  if(iam==0) printf("\n\tI'm building the %s preconditioner ",LS_PTYPE_P(S));
+  if(iam==0) printf("\nSUNLinSolSetup_PSBLAS\n\tI'm building the %s preconditioner ",
+		    LS_PTYPE_P(S));
 
   if ( LS_BMAT_P(S) == NULL){
     if(iam==0) printf("on the same matrix of the system.\n");
@@ -223,7 +256,7 @@ int SUNLinSolSetup_PSBLAS(SUNLinearSolver S, SUNMatrix A){
   /* Print out information on the preconditioner */
   if(strcmp(LS_PTYPE_P(S),"ML") == 0) amg_c_ddescr(LS_MLPREC_P(S));
   if(iam==0) printf("\tBuilding phase of the preconditioner completed\n\n");
-  if (iam==0) psb_c_PrintSolverOptions(&(PSBLAS_CONTENT(S)->options));
+  if (iam==0) psb_c_PrintSolverOptions((PSBLAS_CONTENT(S)->options));
   if(iam==0) printf("\t                                              \n\n");
 
   return(SUN_SUCCESS);
@@ -232,22 +265,24 @@ int SUNLinSolSetup_PSBLAS(SUNLinearSolver S, SUNMatrix A){
 }
 
 int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
-                                            N_Vector x, N_Vector b,
-                                            sunrealtype tol){
-  psb_i_t ret;
-
-  psb_c_DefaultSolverOptions(&(PSBLAS_CONTENT(S)->options));
+			  N_Vector x, N_Vector b,
+			  sunrealtype tol){
+  psb_c_i_t ret;
+  psb_c_dvector empty_vec;
+  empty_vec.dvector=NULL;
+  //psb_c_DefaultSolverOptions(&(PSBLAS_CONTENT(S)->options));
   PSBLAS_CONTENT(S)->options.eps  = tol;
-  PSBLAS_CONTENT(S)->options.itrace = 1;
-  PSBLAS_CONTENT(S)->options.irst = 10;
+  //PSBLAS_CONTENT(S)->options.itrace = 1;
+  //PSBLAS_CONTENT(S)->options.irst = 10;
   N_VAsb_PSBLAS(b);
   N_VAsb_PSBLAS(x);
+  fprintf(stderr,"Done ASB B X\n");
   /* Solve the linear system in PSBLAS, again we need to make a distinction
    * regarding the used preconditioner                                        */
   if( strcmp(LS_PTYPE_P(S),"NONE") == 0||
       strcmp(LS_PTYPE_P(S),"BJAC") == 0 ||
       strcmp(LS_PTYPE_P(S),"DIAG") == 0 ){
-
+    fprintf(stderr,"Calling psb_c_krylov\n");
     ret=psb_c_dkrylov(LS_METHD_P(S),
                     LS_PMAT_P(S),
                     LS_PREC_P(S),
@@ -260,13 +295,26 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
     strcmp(LS_PTYPE_P(S),"GS") == 0 ||
     strcmp(LS_PTYPE_P(S),"AS") == 0 ||
     strcmp(LS_PTYPE_P(S),"FBGS") == 0 ){
+    fprintf(stderr,"Calling amg_c_krylov %p %p\n",
+	    LS_SCALE_S1(S),
+	    LS_SCALE_S2(S));
     ret=amg_c_dkrylov(LS_METHD_P(S),
-                    LS_PMAT_P(S),
-                    LS_MLPREC_P(S),
-                    NV_PVEC_P(b),
-                    NV_PVEC_P(x),
-                    LS_DESCRIPTOR_P(S),
-                    &(PSBLAS_CONTENT(S)->options));
+		      LS_PMAT_P(S),
+                      LS_MLPREC_P(S),
+                      NV_PVEC_P(b),
+                      NV_PVEC_P(x),
+                      LS_DESCRIPTOR_P(S),
+#if 0
+		      LS_SCALE_S1(S),
+		      LS_SCALE_S2(S),
+#elif 0
+		      ((LS_SCALE_S1(S)!=NULL)? LS_SCALE_S1(S) : NV_PVEC_P(empty_clone)) ,
+		      ((LS_SCALE_S2(S)!=NULL)? LS_SCALE_S2(S) : NV_PVEC_P(empty_clone)) ,
+#else
+		      &empty_vec ,
+		      &empty_vec ,		      
+#endif
+		      &(PSBLAS_CONTENT(S)->options));
     if(ret != 0) return(SUNLS_PACKAGE_FAIL_REC);
   }
 
@@ -278,7 +326,7 @@ int SUNLinSolFree_PSBLAS(SUNLinearSolver S){
   various part of the solver: the communicator and the matrix are still there,
   they should be freed after the matrix has been destroyed */
 
-  psb_i_t iam,np;
+  psb_c_i_t iam,np;
 
   if (S == NULL) return(SUN_SUCCESS);
 
@@ -340,7 +388,7 @@ int SUNLinSolSetPreconditioner_PSBLAS(SUNLinearSolver S, SUNMatrix B){
  * SUNLinSol_PSBLAS
  * --------------------------------------- */
 
-int SUNLinSolSeti_PSBLAS(SUNLinearSolver S, const char *what, psb_i_t val){
+int SUNLinSolSeti_PSBLAS(SUNLinearSolver S, const char *what, psb_c_i_t val){
   if (S == NULL || LS_MLPREC_P(S) == NULL) return(-1);
   return(amg_c_dprecseti(LS_MLPREC_P(S), what, val));
 }
@@ -353,6 +401,23 @@ int SUNLinSolSetr_PSBLAS(SUNLinearSolver S, const char *what, double val){
   return(amg_c_dprecsetr(LS_MLPREC_P(S), what, val));
 }
 
+SUNErrCode SUNLinSolSetScalingVectors_PSBLAS(SUNLinearSolver S, N_Vector s1,
+                                            N_Vector s2)
+{
+  /* set N_Vector pointers to integrator-supplied scaling vectors,
+     and return with success */
+  fprintf(stderr,"SetScalingVectors_PSBLAS:   %p %p %p %p\n",
+	  s1,NV_PVEC_P(s1),s2,NV_PVEC_P(s2));
+  LS_SCALE_S1(S) = NV_PVEC_P(s1);
+  LS_SCALE_S2(S) = NV_PVEC_P(s2);
+  return SUN_SUCCESS;
+}
+SUNErrCode SUNLinSolSetZeroGuess_PSBLAS(SUNLinearSolver S, sunbooleantype onff)
+{
+  /* set flag indicating a zero initial guess */
+  PSBLAS_CONTENT(S)->zeroguess = onff;
+  return SUN_SUCCESS;
+}
 
 #ifdef __cplusplus
 }

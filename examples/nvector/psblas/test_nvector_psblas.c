@@ -38,15 +38,15 @@ int main(int argc, char *argv[])
   N_Vector     U, V, W, X, Y, Z;  /* test vectors              */
   int          print_timing;      /* turn timing on/off        */
   psb_c_ctxt   *cctxt;            /* PSBLAS Context            */
-  psb_i_t      ictxt;             /* PSBLAS Integer Context    */
-  psb_i_t      nprocs, myid;      /* Number of procs, proc id  */
+  psb_c_i_t      ictxt;             /* PSBLAS Integer Context    */
+  psb_c_i_t      nprocs, myid;      /* Number of procs, proc id  */
   psb_c_descriptor *cdh;          /* PSBLAS Descriptor         */
   /* Auxiliary variabales */
-  psb_i_t      info;              /* FLAG value for PSBLAS     */
-  psb_l_t      ng;                /* Global length             */
-  psb_i_t      nb, nl;            /* Local lenth               */
-  psb_l_t      *vl;               /* Vector needed for descritor construction */
-  psb_l_t      i;
+  psb_c_i_t      info;              /* FLAG value for PSBLAS     */
+  psb_c_l_t      ng;                /* Global length             */
+  psb_c_i_t      nb, nl;            /* Local lenth               */
+  psb_c_l_t      *vl;               /* Vector needed for descritor construction */
+  psb_c_l_t      i;
   /* MPI Comminicator */
   MPI_Comm     comm;
   SUNContext  sunctx;
@@ -84,15 +84,15 @@ int main(int argc, char *argv[])
   cdh=psb_c_new_descriptor();
   psb_c_set_index_base(0);
 
-  // ng = (psb_l_t) global_length;
+  // ng = (psb_c_l_t) global_length;
   // nb = nprocs;
   // nl = nb;
   // if ( (ng -myid*nb) < nl) nl = ng -myid*nb;
-  // if ((vl=malloc(nb*sizeof(psb_l_t)))==NULL) {
+  // if ((vl=malloc(nb*sizeof(psb_c_l_t)))==NULL) {
   //   fprintf(stderr,"On %d: malloc failure\n",myid);
   //   psb_c_abort(*cctxt);
   // }
-  // i = ((psb_l_t)myid) * nb;
+  // i = ((psb_c_l_t)myid) * nb;
   // for (int k=0; k<nl; k++)
   //   vl[k] = i+k;
   //
@@ -301,9 +301,9 @@ sunbooleantype has_data(N_Vector X)
 
 void set_element(N_Vector X, sunindextype i, sunrealtype val)
 {
-  psb_l_t irow[1];
+  psb_c_l_t irow[1];
   double value[1];
-  psb_i_t myid,nprocs;
+  psb_c_i_t myid,nprocs;
   
   value[0] = val;
   //fprintf(stderr,"PSBLAS set_element calling set_entry %d %lf\n",i,value[0]);
@@ -327,7 +327,7 @@ double max_time(N_Vector X, double time)
 {
   double maxt;
   MPI_Comm comm;
-  psb_i_t ictxt, info;
+  psb_c_i_t ictxt, info;
 
   psb_c_get_i_ctxt(*(NV_CCTXT_P(X)),&ictxt,&info);
 

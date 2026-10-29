@@ -60,6 +60,9 @@ struct _SUNLinearSolverContent_PSBLAS {
   psb_c_ctxt *cctxt;           /* PSBLAS communicator                       */
   char methd[40];              /* String for Method and Preconditioner type */
   char ptype[20];
+  sunbooleantype zeroguess;
+  psb_c_dvector *s1;
+  psb_c_dvector *s2;
 };
 
 typedef struct _SUNLinearSolverContent_PSBLAS *SUNLinearSolverContent_PSBLAS;
@@ -86,6 +89,9 @@ typedef struct _SUNLinearSolverContent_PSBLAS *SUNLinearSolverContent_PSBLAS;
 
 #define LS_PTYPE_P(S) ( PSBLAS_CONTENT(S)->ptype )
 
+#define LS_SCALE_S1(S) ( PSBLAS_CONTENT(S)->s1 )
+#define LS_SCALE_S2(S) ( PSBLAS_CONTENT(S)->s2 )
+
 
 /* ---------------------------------------
  * Exported Functions for SUNLINSOL_PSBLAS
@@ -101,15 +107,20 @@ SUNDIALS_EXPORT int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
 SUNDIALS_EXPORT int SUNLinSolFree_PSBLAS(SUNLinearSolver S);
 
 /* Set functions */
-SUNDIALS_EXPORT int SUNLinSolSeti_PSBLAS(SUNLinearSolver S, const char *what, psb_i_t val);
+SUNDIALS_EXPORT int SUNLinSolSeti_PSBLAS(SUNLinearSolver S, const char *what, psb_c_i_t val);
 SUNDIALS_EXPORT int SUNLinSolSetc_PSBLAS(SUNLinearSolver S, const char *what, const char *val);
 SUNDIALS_EXPORT int SUNLinSolSetr_PSBLAS(SUNLinearSolver S, const char *what, double val);
 SUNDIALS_EXPORT int SUNLinSolSetPreconditioner_PSBLAS(SUNLinearSolver S, SUNMatrix B);
+SUNDIALS_EXPORT int SUNLinSolSetScalingVectors_PSBLAS(SUNLinearSolver S, N_Vector s1,
+						      N_Vector s2);
 /* Get functions */
 SUNDIALS_EXPORT int SUNLinSolNumIters_PSBLAS(SUNLinearSolver S);
 SUNDIALS_EXPORT sunrealtype SUNLinSolResNorm_PSBLAS(SUNLinearSolver S);
 SUNDIALS_EXPORT long int SUNLinSolLastFlag_PSBLAS(SUNLinearSolver S);
 
+SUNDIALS_EXPORT SUNErrCode SUNLinSolSetZeroGuess_PSBLAS(SUNLinearSolver S,
+                                                       sunbooleantype onff);
+  
 #ifdef __cplusplus
 }
 #endif

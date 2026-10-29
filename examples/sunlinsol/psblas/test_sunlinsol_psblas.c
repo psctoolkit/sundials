@@ -43,9 +43,9 @@ double  b2(double x, double y);
 double  b3(double x, double y);
 double 	g(double x, double y);
 double 	c(double x, double y);
-psb_i_t matgen(psb_c_ctxt cctxt, psb_i_t nl, 
-	       psb_l_t mshr, psb_l_t mshc, psb_l_t vl[],SUNMatrix A);
-psb_l_t splitdim(psb_l_t dim);
+psb_c_i_t matgen(psb_c_ctxt cctxt, psb_c_i_t nl, 
+	       psb_c_l_t mshr, psb_c_l_t mshc, psb_c_l_t vl[],SUNMatrix A);
+psb_c_l_t splitdim(psb_c_l_t dim);
 /*-------------------------------------------------
  * Routine to read input from file
  *------------------------------------------------*/
@@ -93,21 +93,21 @@ int main(int argc, char *argv[])
   double          tol;                     /* tolerance for solution    */
   psb_c_SolverOptions options;             /* Solver options            */
   psb_c_ctxt  *cctxt;                      /* PSBLAS Context            */
-  psb_i_t      ictxt;                      /* PSBLAS Integer Context    */
-  psb_i_t      nprocs, myid;               /* Number of procs, proc id  */
+  psb_c_i_t      ictxt;                      /* PSBLAS Integer Context    */
+  psb_c_i_t      nprocs, myid;               /* Number of procs, proc id  */
   psb_c_descriptor *cdh;                   /* PSBLAS Descriptor         */
   /* Auxiliary variabales */
-  psb_i_t      info;              				 /* FLAG value for PSBLAS     */
+  psb_c_i_t      info;              				 /* FLAG value for PSBLAS     */
   char        *fout;
   MPI_Comm     comm;											 /* MPI Comminicator          */
-  psb_i_t nb,nlr,nl;									     /* Block Data distribution   */
-  psb_l_t i,ng, *vl, k;
+  psb_c_i_t nb,nlr,nl;									     /* Block Data distribution   */
+  psb_c_l_t i,ng, *vl, k;
   /* Input parameters */
   char methd[20],ptype[20];                /* Solve method and type     */
   char afmt[8];
-  psb_i_t nparms;
-  psb_i_t idim,istop,itmax,itrace,irst;
-  psb_l_t mshr, mshc;
+  psb_c_i_t nparms;
+  psb_c_i_t idim,istop,itmax,itrace,irst;
+  psb_c_l_t mshr, mshc;
   SUNContext sunctx;
 
   /* Get processor number and total number of processes */
@@ -188,20 +188,20 @@ int main(int argc, char *argv[])
   cdh = psb_c_new_descriptor();
   psb_c_set_index_base(0);
   /* Simple minded BLOCK data distribution */
-  ng = ((psb_l_t) idim)*idim*idim;
-  ng = ((psb_l_t) idim);
+  ng = ((psb_c_l_t) idim)*idim*idim;
+  ng = ((psb_c_l_t) idim);
   mshr = splitdim(ng);
   mshc = ng/mshr;
   nb = (ng+nprocs-1)/nprocs;
   nl = nb;
   if ( (ng -myid*nb) < nl) nl = ng -myid*nb;
   fprintf(stdout,"%d: Input data %d %ld %d %d\n",myid,idim,ng,nb, nl);
-  vl = malloc(nb*sizeof(psb_l_t));
+  vl = malloc(nb*sizeof(psb_c_l_t));
   if (vl == NULL) {
     fprintf(stderr,"On %d: malloc failure\n",myid);
     psb_c_abort(*cctxt);
   }
-  i = ((psb_l_t)myid) * nb;
+  i = ((psb_c_l_t)myid) * nb;
   for (k=0; k<nl; k++)
     vl[k] = i+k;
 
@@ -341,10 +341,10 @@ int check_vector(N_Vector X, N_Vector Y, sunrealtype tol)
  * PSBLAS Auxiliary functions for matrix creation
  *------------------------------------------------*/
 
-psb_l_t splitdim(psb_l_t dim)
+psb_c_l_t splitdim(psb_c_l_t dim)
 {
-  psb_l_t tmp;
-  tmp = ((psb_l_t) 1) + sqrt(((double)1.0)*dim);
+  psb_c_l_t tmp;
+  tmp = ((psb_c_l_t) 1) + sqrt(((double)1.0)*dim);
   for ( ; ((tmp > 1) && (dim%tmp != 0));  tmp--);  
   return(tmp);	  
 }
@@ -388,15 +388,15 @@ psb_l_t splitdim(psb_l_t dim)
    }
  }
 
-psb_i_t matgen(psb_c_ctxt cctxt, psb_i_t nl, 
-	       psb_l_t mshr, psb_l_t mshc, psb_l_t vl[],SUNMatrix A)
+psb_c_i_t matgen(psb_c_ctxt cctxt, psb_c_i_t nl, 
+	       psb_c_l_t mshr, psb_c_l_t mshc, psb_c_l_t vl[],SUNMatrix A)
 {
-  psb_i_t iam, np;
-  psb_l_t ix, iy, el, glob_row, mindim;
-  psb_i_t i, k, info;
+  psb_c_i_t iam, np;
+  psb_c_l_t ix, iy, el, glob_row, mindim;
+  psb_c_i_t i, k, info;
   double x, y, deltah, sqdeltah, deltah2;
   double val[10*NBMAX], zt[NBMAX];
-  psb_l_t irow[10*NBMAX], icol[10*NBMAX];
+  psb_c_l_t irow[10*NBMAX], icol[10*NBMAX];
 
   info = 0;
   psb_c_info(cctxt,&iam,&np);

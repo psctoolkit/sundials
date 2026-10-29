@@ -41,10 +41,10 @@ double  b2(double x, double y);
 double  b3(double x, double y);
 double 	g(double x, double y);
 double 	c(double x, double y);
-psb_i_t matgen(psb_c_ctxt cctxt, psb_i_t nl, 
-	       psb_l_t mshr, psb_l_t mshc, psb_l_t vl[],SUNMatrix A);
-psb_i_t eyegen(psb_c_ctxt cctxt, psb_i_t nl, psb_i_t idim, psb_l_t vl[],SUNMatrix A);
-psb_l_t splitdim(psb_l_t dim);
+psb_c_i_t matgen(psb_c_ctxt cctxt, psb_c_i_t nl, 
+	       psb_c_l_t mshr, psb_c_l_t mshc, psb_c_l_t vl[],SUNMatrix A);
+psb_c_i_t eyegen(psb_c_ctxt cctxt, psb_c_i_t nl, psb_c_i_t idim, psb_c_l_t vl[],SUNMatrix A);
+psb_c_l_t splitdim(psb_c_l_t dim);
 /* ----------------------------------------------------------------------
  * Main SUNMatrix PSBLAS Testing Routine
  * --------------------------------------------------------------------*/
@@ -57,15 +57,15 @@ int main(int argc, char *argv[])
   SUNMatrix    A, B, I;            				 /* test matrices              */
   int          print_timing, square;
   psb_c_ctxt	*cctxt;											 /* PSBLAS Context             */
-  psb_i_t      ictxt;                      /* PSBLAS Integer Context     */
-  psb_i_t      nprocs, myid;               /* Number of procs, proc id   */
+  psb_c_i_t      ictxt;                      /* PSBLAS Integer Context     */
+  psb_c_i_t      nprocs, myid;               /* Number of procs, proc id   */
   psb_c_descriptor *cdh;                   /* PSBLAS Descriptor          */
   /* Auxiliary variabales */
-  psb_i_t      info;              				/* FLAG value for PSBLAS     */
+  psb_c_i_t      info;              				/* FLAG value for PSBLAS     */
   MPI_Comm     comm;											/* MPI Comminicator */
-  psb_i_t nb,nlr,nl,idim;									/* Poisson problem variables */
-  psb_l_t i, ng, *vl, k;
-  psb_l_t mshr, mshc;
+  psb_c_i_t nb,nlr,nl,idim;									/* Poisson problem variables */
+  psb_c_l_t i, ng, *vl, k;
+  psb_c_l_t mshr, mshc;
   
   sunrealtype  tol=10*SUN_UNIT_ROUNDOFF;
   SUNContext sunctx;
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
   psb_c_set_index_base(0);
   idim = matrows;
   /* Simple minded BLOCK data distribution */
-  ng = ((psb_l_t) idim);
+  ng = ((psb_c_l_t) idim);
   mshr = splitdim(ng);
   mshc = ng/mshr;
   
@@ -120,12 +120,12 @@ int main(int argc, char *argv[])
   if ( (ng-myid*nb) < nl) nl = ng -myid*nb;
   fprintf(stderr,"%d: Input data %d %ld %d %d    %ld %ld %ld\n",myid,
 	  idim,ng,nb, nl, mshr, mshc,mshr*mshc);
-  vl = malloc(nb*sizeof(psb_l_t));
+  vl = malloc(nb*sizeof(psb_c_l_t));
   if (vl == NULL) {
     fprintf(stderr,"On %d: malloc failure\n",myid);
     psb_c_abort(*cctxt);
   }
-  i = ((psb_l_t)myid) * nb;
+  i = ((psb_c_l_t)myid) * nb;
   for (k=0; k<nl; k++)
     vl[k] = i+k;
 
@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
 /* ----------------------------------------------------------------------
  * Check matrix
  * --------------------------------------------------------------------*/
-psb_i_t check_matrix(SUNMatrix A, SUNMatrix B, sunrealtype tol)
+psb_c_i_t check_matrix(SUNMatrix A, SUNMatrix B, sunrealtype tol)
 {
   bool test;
   sunindextype Annz;
@@ -368,10 +368,10 @@ sunbooleantype is_square(SUNMatrix A)
      return SUNFALSE;
 }
 
-psb_l_t splitdim(psb_l_t dim)
+psb_c_l_t splitdim(psb_c_l_t dim)
 {
-  psb_l_t tmp;
-  tmp = ((psb_l_t) 1) + sqrt(((double)1.0)*dim);
+  psb_c_l_t tmp;
+  tmp = ((psb_c_l_t) 1) + sqrt(((double)1.0)*dim);
   for ( ; ((tmp > 1) && (dim%tmp != 0));  tmp--);  
   return(tmp);	  
 }
@@ -416,15 +416,15 @@ double g(double x, double y)
   }
 }
 
-psb_i_t matgen(psb_c_ctxt cctxt, psb_i_t nl, 
-	       psb_l_t mshr, psb_l_t mshc, psb_l_t vl[],SUNMatrix A)
+psb_c_i_t matgen(psb_c_ctxt cctxt, psb_c_i_t nl, 
+	       psb_c_l_t mshr, psb_c_l_t mshc, psb_c_l_t vl[],SUNMatrix A)
 {
-  psb_i_t iam, np;
-  psb_l_t ix, iy, el, glob_row, mindim;
-  psb_i_t i, k, info;
+  psb_c_i_t iam, np;
+  psb_c_l_t ix, iy, el, glob_row, mindim;
+  psb_c_i_t i, k, info;
   double x, y, deltah, sqdeltah, deltah2;
   double val[10*NBMAX], zt[NBMAX];
-  psb_l_t irow[10*NBMAX], icol[10*NBMAX];
+  psb_c_l_t irow[10*NBMAX], icol[10*NBMAX];
 
   info = 0;
   psb_c_info(cctxt,&iam,&np);
@@ -488,14 +488,14 @@ psb_i_t matgen(psb_c_ctxt cctxt, psb_i_t nl,
 
 }
 
-psb_i_t eyegen(psb_c_ctxt cctxt, psb_i_t nl, psb_i_t idim, psb_l_t vl[],SUNMatrix A)
+psb_c_i_t eyegen(psb_c_ctxt cctxt, psb_c_i_t nl, psb_c_i_t idim, psb_c_l_t vl[],SUNMatrix A)
 {
-  psb_i_t iam, np;
-  psb_l_t ix, iy, iz, el,glob_row;
-  psb_i_t i, k, info;
+  psb_c_i_t iam, np;
+  psb_c_l_t ix, iy, iz, el,glob_row;
+  psb_c_i_t i, k, info;
   double x, y, z, deltah;
   double val[10*NBMAX], zt[NBMAX];
-  psb_l_t irow[10*NBMAX], icol[10*NBMAX];
+  psb_c_l_t irow[10*NBMAX], icol[10*NBMAX];
 
   info = 0;
   psb_c_info(cctxt,&iam,&np);

@@ -161,11 +161,11 @@ N_Vector N_VNew_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh, SUNContext sunc
  * This function does not allocate memory for pvec itsefl
  */
 
-N_Vector N_VMake_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh, psb_i_t m, psb_l_t *irow,
+N_Vector N_VMake_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh, psb_c_i_t m, psb_c_l_t *irow,
 			double *val, SUNContext sunctx)
 {
   N_Vector v;
-  psb_i_t    local_length;
+  psb_c_i_t    local_length;
   
   v = NULL;
 #if 0  
@@ -407,7 +407,7 @@ N_Vector N_VCloneEmpty_PSBLAS(N_Vector w)
 N_Vector N_VClone_PSBLAS(N_Vector w)
 {
   N_Vector v;
-  psb_i_t info;
+  psb_c_i_t info;
 
   v = NULL;
   v = N_VCloneEmpty_PSBLAS(w);
@@ -423,7 +423,7 @@ N_Vector N_VClone_PSBLAS(N_Vector w)
 
 void N_VDestroy_PSBLAS(N_Vector v)
 {
-  psb_i_t info;
+  psb_c_i_t info;
   if ((NV_OWN_DATA_P(v) == SUNTRUE) && (NV_PVEC_P(v) != NULL)) {
     if ((info=psb_c_dgefree(NV_PVEC_P(v),NV_DESCRIPTOR_P(v)))!=0){
       printf("PSBLAS Error %d in freeing vector\n",info);
@@ -492,8 +492,8 @@ x and y are of type N_Vector: z_i = a x_i + b y_i, i=0,...,n-1*/
 void N_VConst_PSBLAS(sunrealtype c, N_Vector z)
 {
 /*Sets all components of the N_Vector z to sunrealtype c: z_i = c, i=0,...,n-1   */
-  psb_i_t glob_row, ng;
-  psb_l_t irow[1];
+  psb_c_i_t glob_row, ng;
+  psb_c_l_t irow[1];
   double zt[1];
   zt[0]=c;
 #if 0
@@ -517,7 +517,7 @@ void N_VConst_PSBLAS(sunrealtype c, N_Vector z)
 void N_VProd_PSBLAS(N_Vector x, N_Vector y, N_Vector z){
 /*Sets the N_Vector z to be the component-wise product of N_Vector inputs x and
 y: z_i = x_i y_i, i=0,...,n-1 */
-  psb_c_dgemlt2( (psb_d_t) 1.0,NV_PVEC_P(x),NV_PVEC_P(y), (psb_d_t) 0.0,NV_PVEC_P(z),NV_DESCRIPTOR_P(x));
+  psb_c_dgemlt2( (psb_c_d_t) 1.0,NV_PVEC_P(x),NV_PVEC_P(y), (psb_c_d_t) 0.0,NV_PVEC_P(z),NV_DESCRIPTOR_P(x));
   return;
 }
 
@@ -534,9 +534,9 @@ void N_VScale_PSBLAS(sunrealtype c, N_Vector x, N_Vector z){
 */
   //psb_c_dgescal(NV_PVEC_P(x),c,NV_PVEC_P(z),NV_DESCRIPTOR_P(x));
   if(z==x){
-    psb_c_dgeaxpby((psb_d_t) 0.0,NV_PVEC_P(x), c, NV_PVEC_P(x),NV_DESCRIPTOR_P(x));
+    psb_c_dgeaxpby((psb_c_d_t) 0.0,NV_PVEC_P(x), c, NV_PVEC_P(x),NV_DESCRIPTOR_P(x));
   }else{
-    psb_c_dgeaxpbyz(c,NV_PVEC_P(x),(psb_d_t) 0.0, NV_PVEC_P(x),NV_PVEC_P(z),NV_DESCRIPTOR_P(x));
+    psb_c_dgeaxpbyz(c,NV_PVEC_P(x),(psb_c_d_t) 0.0, NV_PVEC_P(x),NV_PVEC_P(z),NV_DESCRIPTOR_P(x));
   }
   return;
 }
@@ -618,11 +618,11 @@ z_i = 1 if |x_i| < c else z_i = 0 for i=1,...,length(x)*/
 sunbooleantype N_VInvTest_PSBLAS(N_Vector x, N_Vector z){
 /* Computes z_i = 1/x_i iff x_i != 0, returns true if every test was positive,
 otherwise returns false */
-  psb_i_t info;
+  psb_c_i_t info;
 
   info = psb_c_dgeinv_check(NV_PVEC_P(x),NV_PVEC_P(z),NV_DESCRIPTOR_P(x),1);
 
-  if(info == (psb_i_t) 1){
+  if(info == (psb_c_i_t) 1){
     return(SUNTRUE);
   }else{
     return(SUNFALSE);
@@ -653,7 +653,7 @@ sunrealtype N_VMinQuotient_PSBLAS(N_Vector num, N_Vector denom){
 * -----------------------------------------------------------------
 */
 int N_VLinearCombination_PSBLAS(int nvec, sunrealtype* c, N_Vector* V,N_Vector z){
-  psb_i_t      ierr;
+  psb_c_i_t      ierr;
   sunindextype j, N;
 
   /* invalid number of vectors */
@@ -672,7 +672,7 @@ int N_VLinearCombination_PSBLAS(int nvec, sunrealtype* c, N_Vector* V,N_Vector z
   }
 
   if(z == V[0]){
-    ierr = psb_c_dgeaxpby((psb_d_t) 0.0,NV_PVEC_P(V[0]), c[0], NV_PVEC_P(z),NV_DESCRIPTOR_P(V[0]));
+    ierr = psb_c_dgeaxpby((psb_c_d_t) 0.0,NV_PVEC_P(V[0]), c[0], NV_PVEC_P(z),NV_DESCRIPTOR_P(V[0]));
     for(j=1;j<nvec;j++){
       ierr = psb_c_dgeaxpbyz( c[j], NV_PVEC_P(V[j]),1.0,NV_PVEC_P(z), NV_PVEC_P(z), NV_DESCRIPTOR_P(z));
     }
@@ -700,7 +700,7 @@ int N_VScaleAddMulti_PSBLAS(int nvec, sunrealtype* a, N_Vector x,N_Vector* Y, N_
   }
 
   for(j=0;j<nvec;j++){
-    psb_c_dgeaxpbyz((psb_d_t) a[j],NV_PVEC_P(x),(psb_d_t) 1.0,NV_PVEC_P(Y[j]),NV_PVEC_P(Z[j]),NV_DESCRIPTOR_P(Y[j]));
+    psb_c_dgeaxpbyz((psb_c_d_t) a[j],NV_PVEC_P(x),(psb_c_d_t) 1.0,NV_PVEC_P(Y[j]),NV_PVEC_P(Z[j]),NV_DESCRIPTOR_P(Y[j]));
     if(j==nvec-1) return(0);
   }
 
@@ -916,10 +916,10 @@ int N_VLinearCombinationVectorArray_PSBLAS(int nvec, int nsum, sunrealtype* c, N
   /*
    * X[0][j] += c[i]*X[i][j], i = 1,...,nvec-1
    */
-  if ((X[0] == Z) && (c[0] == (psb_d_t) 1.0)) {
+  if ((X[0] == Z) && (c[0] == (psb_c_d_t) 1.0)) {
     for (j=0; j<nvec; j++) {
       for (i=1; i<nsum; i++) {
-        psb_c_dgeaxpby(c[i],NV_PVEC_P(X[i][j]),(psb_d_t) 1.0,NV_PVEC_P(X[0][j]),NV_DESCRIPTOR_P(X[i][j]));
+        psb_c_dgeaxpby(c[i],NV_PVEC_P(X[i][j]),(psb_c_d_t) 1.0,NV_PVEC_P(X[0][j]),NV_DESCRIPTOR_P(X[i][j]));
       }
     }
     return(0);
@@ -932,7 +932,7 @@ int N_VLinearCombinationVectorArray_PSBLAS(int nvec, int nsum, sunrealtype* c, N
     for (j=0; j<nvec; j++) {
       N_VScale_PSBLAS(c[0],X[0][j],X[0][j]);
       for (i=1; i<nsum; i++) {
-        psb_c_dgeaxpby(c[i],NV_PVEC_P(X[i][j]),(psb_d_t) 1.0,NV_PVEC_P(X[0][j]),NV_DESCRIPTOR_P(X[0][j]));
+        psb_c_dgeaxpby(c[i],NV_PVEC_P(X[i][j]),(psb_c_d_t) 1.0,NV_PVEC_P(X[0][j]),NV_DESCRIPTOR_P(X[0][j]));
       }
     }
     return(0);
@@ -943,7 +943,7 @@ int N_VLinearCombinationVectorArray_PSBLAS(int nvec, int nsum, sunrealtype* c, N
    */
   for (j=0; j<nvec; j++) {
     for (i=0; i<nsum; i++) {
-      psb_c_dgeaxpby(c[i],NV_PVEC_P(X[i][j]),(psb_d_t) 1.0,NV_PVEC_P(Z[j]),NV_DESCRIPTOR_P(Z[j]));
+      psb_c_dgeaxpby(c[i],NV_PVEC_P(X[i][j]),(psb_c_d_t) 1.0,NV_PVEC_P(Z[j]),NV_DESCRIPTOR_P(Z[j]));
     }
   }
   return(0);

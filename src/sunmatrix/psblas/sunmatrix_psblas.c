@@ -27,8 +27,8 @@
 #include <sundials/sundials_nvector.h>
 #include <sundials/sundials_math.h>
 
-#define ZERO (psb_d_t) 0.0
-#define ONE  (psb_d_t) 1.0
+#define ZERO (psb_c_d_t) 0.0
+#define ONE  (psb_c_d_t) 1.0
 
 /*
  * -----------------------------------------------------------------
@@ -52,7 +52,7 @@ SUNMatrix SUNPSBLASMatrix(psb_c_ctxt *cctxt, psb_c_descriptor *cdh)
   SUNMatrix_Ops ops;
   SUNMatrixContent_PSBLAS content;
   psb_c_dspmat *ah;
-  psb_i_t ret;
+  psb_c_i_t ret;
 
   /* Create Matrix */
   A = NULL;
@@ -74,7 +74,7 @@ SUNMatrix SUNPSBLASMatrix(psb_c_ctxt *cctxt, psb_c_descriptor *cdh)
   ops->scaleaddi   = SUNMatScaleAddI_PSBLAS;
   ops->matvec      = SUNMatMatvec_PSBLAS;
   ops->space       = SUNMatSpace_PSBLAS;
-	ops->matvecsetup = NULL; // PSBLAS doesn't need seetup before matvec!
+  ops->matvecsetup = NULL; // PSBLAS doesn't need seetup before matvec!
 
   /* Create content */
   content = NULL;
@@ -156,7 +156,7 @@ SUNMatrix SUNMatClone_PSBLAS(SUNMatrix A)
   SUNMatrix_Ops ops;
   SUNMatrixContent_PSBLAS content;
   psb_c_dspmat *ah;
-  psb_i_t ret;
+  psb_c_i_t ret;
 
   /* Create Matrix */
   B = NULL;
@@ -272,8 +272,8 @@ int SUNMatMatvec_PSBLAS(SUNMatrix A, N_Vector x, N_Vector y)
 	if(!psb_c_dis_matasb(SM_PMAT_P(A),SM_DESCRIPTOR_P(A)))
 		psb_c_dspasb(SM_PMAT_P(A),SM_DESCRIPTOR_P(A));
 
-  return(psb_c_dspmm( (psb_d_t) 1.0, SM_PMAT_P(A), NV_PVEC_P(x) ,
-  		    (psb_d_t) 0.0, NV_PVEC_P(y) , SM_DESCRIPTOR_P(A)));
+  return(psb_c_dspmm( (psb_c_d_t) 1.0, SM_PMAT_P(A), NV_PVEC_P(x) ,
+  		    (psb_c_d_t) 0.0, NV_PVEC_P(y) , SM_DESCRIPTOR_P(A)));
 }
 
 int SUNMatSpace_PSBLAS(SUNMatrix A, long int *lenrw, long int *leniw){
@@ -310,8 +310,8 @@ int SUNMatSpace_PSBLAS(SUNMatrix A, long int *lenrw, long int *leniw){
     }
  }
 
- int SUNMatIns_PSBLAS(psb_i_t nz, const psb_l_t *irw, const psb_l_t *icl,
- 			const psb_d_t *val,SUNMatrix A){
+ int SUNMatIns_PSBLAS(psb_c_i_t nz, const psb_c_l_t *irw, const psb_c_l_t *icl,
+ 			const psb_c_d_t *val,SUNMatrix A){
    /* This is just an overload of the psb_c_dspins function, can be used
    to explicitly avoiding the user accessing the SM_PMAT_P(A) pointer */
    bool check;
@@ -324,6 +324,7 @@ int SUNMatSpace_PSBLAS(SUNMatrix A, long int *lenrw, long int *leniw){
    check = psb_c_dis_matasb(SM_PMAT_P(A),SM_DESCRIPTOR_P(A));
    /* If the matrix was already in ASSEMBLED state, it puts into UPDATE */
    if(check){
+     psb_c_dsprn(SM_PMAT_P(A),SM_DESCRIPTOR_P(A),true);
      psb_c_dset_matupd(SM_PMAT_P(A),SM_DESCRIPTOR_P(A));
    }
 
