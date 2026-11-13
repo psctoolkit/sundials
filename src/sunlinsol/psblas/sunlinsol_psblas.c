@@ -282,7 +282,7 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
   if( strcmp(LS_PTYPE_P(S),"NONE") == 0||
       strcmp(LS_PTYPE_P(S),"BJAC") == 0 ||
       strcmp(LS_PTYPE_P(S),"DIAG") == 0 ){
-    fprintf(stderr,"Calling psb_c_krylov\n");
+    //fprintf(stderr,"Calling psb_c_krylov\n");
     ret=psb_c_dkrylov(LS_METHD_P(S),
                     LS_PMAT_P(S),
                     LS_PREC_P(S),
@@ -295,9 +295,9 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
     strcmp(LS_PTYPE_P(S),"GS") == 0 ||
     strcmp(LS_PTYPE_P(S),"AS") == 0 ||
     strcmp(LS_PTYPE_P(S),"FBGS") == 0 ){
-    fprintf(stderr,"Calling amg_c_krylov %p %p\n",
-	    LS_SCALE_S1(S),
-	    LS_SCALE_S2(S));
+    //fprintf(stderr,"Calling amg_c_krylov %p %p\n",
+    //	    LS_SCALE_S1(S),
+    //	    LS_SCALE_S2(S));
     ret=amg_c_dkrylov(LS_METHD_P(S),
 		      LS_PMAT_P(S),
                       LS_MLPREC_P(S),
