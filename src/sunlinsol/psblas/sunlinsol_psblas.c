@@ -124,7 +124,8 @@ int SUNLinSolInitialize_PSBLAS(SUNLinearSolver S){
 
   psb_c_info(*(LS_CCTXT_P(S)),&iam,&np);
 
-  if(iam==0) printf("I'm initializing the %s solver with %s preconditioner\n",LS_METHD_P(S),LS_PTYPE_P(S));
+  if(iam==0) printf("I'm initializing the %s solver with %s preconditioner\n",
+		    LS_METHD_P(S),LS_PTYPE_P(S));
 
   if(S == NULL) return(SUN_ERR_ARG_CORRUPT);
 
@@ -168,9 +169,14 @@ int SUNLinSolInitialize_PSBLAS(SUNLinearSolver S){
     ret = amg_c_dprecseti(LS_MLPREC_P(S), "KRM_FILLIN", 1);
     ret = amg_c_dprecsetr(LS_MLPREC_P(S), "KRM_EPS", 1.0e-4);
     ret = amg_c_dprecseti(LS_MLPREC_P(S), "KRM_ITMAX", 30);
+#if 0
+    ret = amg_c_dprecsetc(LS_MLPREC_P(S), "PAR_AGGR_ALG","DECOUPLED");
+    ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_TYPE","SOC1");
+#else
     ret = amg_c_dprecsetc(LS_MLPREC_P(S), "PAR_AGGR_ALG","COUPLED");
     ret = amg_c_dprecsetc(LS_MLPREC_P(S), "AGGR_TYPE","MATCHBOXP");
     ret = amg_c_dprecseti(LS_MLPREC_P(S), "AGGR_SIZE",8);
+#endif
 #if 0
     if(ret != 0){
       if(iam == 0) printf("Failure on AMG4PSBLAS precsetc %d ptype %s\n",
@@ -276,7 +282,7 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
   //PSBLAS_CONTENT(S)->options.irst = 10;
   N_VAsb_PSBLAS(b);
   N_VAsb_PSBLAS(x);
-  fprintf(stderr,"Done ASB B X\n");
+  //  fprintf(stderr,"Done ASB B X\n");
   /* Solve the linear system in PSBLAS, again we need to make a distinction
    * regarding the used preconditioner                                        */
   if( strcmp(LS_PTYPE_P(S),"NONE") == 0||
@@ -298,6 +304,9 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
     //fprintf(stderr,"Calling amg_c_krylov %p %p\n",
     //	    LS_SCALE_S1(S),
     //	    LS_SCALE_S2(S));
+    // printf("RHS before solver:  %p\n",b);
+    //N_VPrint_PSBLAS(b);
+
     ret=amg_c_dkrylov(LS_METHD_P(S),
 		      LS_PMAT_P(S),
                       LS_MLPREC_P(S),
@@ -315,6 +324,8 @@ int SUNLinSolSolve_PSBLAS(SUNLinearSolver S, SUNMatrix A,
 		      &empty_vec ,		      
 #endif
 		      &(PSBLAS_CONTENT(S)->options));
+    //printf("X after solver:  \n");
+    //N_VPrint_PSBLAS(x);
     if(ret != 0) return(SUNLS_PACKAGE_FAIL_REC);
   }
 
@@ -406,8 +417,8 @@ SUNErrCode SUNLinSolSetScalingVectors_PSBLAS(SUNLinearSolver S, N_Vector s1,
 {
   /* set N_Vector pointers to integrator-supplied scaling vectors,
      and return with success */
-  fprintf(stderr,"SetScalingVectors_PSBLAS:   %p %p %p %p\n",
-	  s1,NV_PVEC_P(s1),s2,NV_PVEC_P(s2));
+  //printf("SetScalingVectors_PSBLAS:   %p %p %p %p\n",
+  //  s1,NV_PVEC_P(s1),s2,NV_PVEC_P(s2));
   LS_SCALE_S1(S) = NV_PVEC_P(s1);
   LS_SCALE_S2(S) = NV_PVEC_P(s2);
   return SUN_SUCCESS;

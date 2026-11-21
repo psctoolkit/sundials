@@ -106,6 +106,9 @@ N_Vector N_VNewEmpty_PSBLAS(psb_c_ctxt *cctxt, psb_c_descriptor *cdh, SUNContext
   ops->nvwrmsnormmaskvectorarray      = NULL;
   ops->nvscaleaddmultivectorarray     = NULL;
   ops->nvlinearcombinationvectorarray = NULL;
+  /* print operation for debugging */
+  ops->nvprint     = N_VPrint_PSBLAS;
+  ops->nvprintfile = N_VPrintFile_PSBLAS;
 
   /* Create content */
   content = NULL;
@@ -303,14 +306,15 @@ void N_VPrintFile_PSBLAS(N_Vector x, FILE* outfile)
 
   N  = N_VGetLocalLength_PSBLAS(x);
   xd = psb_c_dvect_get_cpy(NV_PVEC_P(x));
-
+  //fprintf(stderr,"N_VPrintFile_PSBLAS: %d  %p  %p\n",N, xd, outfile);
+  fprintf(outfile,"N_VPrintFile_PSBLAS: %d\n",N);
   for (i = 0; i < N; i++) {
 #if defined(SUNDIALS_EXTENDED_PRECISION)
-    fprintf(outfile, "%1.16f\n", xd[i]);
+    fprintf(outfile, "%8.24lf\n", xd[i]);
 #elif defined(SUNDIALS_DOUBLE_PRECISION)
-    fprintf(outfile, "%1.16f\n", xd[i]);
+    fprintf(outfile, "%8.24lf\n", xd[i]);
 #else
-    fprintf(outfile, "%1.16f\n", xd[i]);
+    fprintf(outfile, "%8.24lf\n", xd[i]);
 #endif
   }
   fprintf(outfile, "\n");
@@ -385,6 +389,9 @@ N_Vector N_VCloneEmpty_PSBLAS(N_Vector w)
   ops->nvwrmsnormmaskvectorarray      = w->ops->nvwrmsnormmaskvectorarray;
   ops->nvscaleaddmultivectorarray     = w->ops->nvscaleaddmultivectorarray;
   ops->nvlinearcombinationvectorarray = w->ops->nvlinearcombinationvectorarray;
+  /* print operation for debugging */
+  ops->nvprint     = w->ops->nvprint     ;
+  ops->nvprintfile = w->ops->nvprintfile ;
 
   /* Create content */
   content = NULL;
@@ -506,9 +513,11 @@ void N_VConst_PSBLAS(sunrealtype c, N_Vector z)
   N_VAsb_PSBLAS(z);
 #else
   //fprintf(stderr,"VConst_PSBLAS calling set_scal\n");
+  //fprintf(stderr,"VConst_PSBLAS calling set_scal %lf %p\n",c,z);
   // Note: TO BE FIXED PROPERLY
   N_VAsb_PSBLAS(z);
   psb_c_dvect_set_scal(NV_PVEC_P(z),zt[0]);
+  //N_VPrint_PSBLAS(z);
 #endif
 
   return;
@@ -533,11 +542,16 @@ void N_VScale_PSBLAS(sunrealtype c, N_Vector x, N_Vector z){
 /* Scales the N_Vector x by the sunrealtype scalar c and returns the results in z.
 */
   //psb_c_dgescal(NV_PVEC_P(x),c,NV_PVEC_P(z),NV_DESCRIPTOR_P(x));
+  //printf("VScale_PSBLAS: %lf \n",c);
+  //N_VPrint_PSBLAS(x);
+  
   if(z==x){
     psb_c_dgeaxpby((psb_c_d_t) 0.0,NV_PVEC_P(x), c, NV_PVEC_P(x),NV_DESCRIPTOR_P(x));
   }else{
     psb_c_dgeaxpbyz(c,NV_PVEC_P(x),(psb_c_d_t) 0.0, NV_PVEC_P(x),NV_PVEC_P(z),NV_DESCRIPTOR_P(x));
   }
+  // printf("Out from VScale_PSBLAS \n");
+  //N_VPrint_PSBLAS(z);
   return;
 }
 
